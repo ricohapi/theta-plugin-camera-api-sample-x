@@ -1,0 +1,2 @@
+rootProject.name = "theta-plugin-camera-api-sample-x"
+include ':app'

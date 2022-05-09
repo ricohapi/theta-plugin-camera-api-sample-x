@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Camera API Sample</string>
+    <string-array name="RIC_SHOOTING_MODE_IMAGE_ARRAY">
+        <item>RicStillCaptureStd</item>
+        <item>RicStillCaptureMultiRawNR</item>
+        <item>RicStillCaptureMultiYuvHdr</item>
+    </string-array>
+    <string-array name="RIC_SHOOTING_MODE_VIDEO_ARRAY">
+        <item>RicMovieRecording1920</item>
+        <item>RicMovieRecording3840</item>
+        <item>RicMovieRecording5760</item>
+        <item>RicMovieRecording7680</item>
+    </string-array>
+    <string-array name="RIC_PROC_STITCHING_ARRAY">
+        <item>RicNonStitching</item>
+        <item>RicStaticStitching</item>
+        <item>RicDynamicStitchingAuto</item>
+    </string-array>
+    <string-array name="RIC_PROC_ZENITH_CORRECTION_ARRAY">
+        <item>RicZenithCorrectionOff</item>
+        <item>RicZenithCorrectionOnAuto</item>
+        <item>RicZenithCorrectionOnManual</item>
+    </string-array>
+    <string name="start_video">START VIDEO</string>
+    <string name="stop_video">STOP VIDEO</string>
+    <string name="take_picture">TAKE PICTURE</string>
+</resources>
