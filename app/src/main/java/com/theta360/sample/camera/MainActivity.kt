@@ -22,7 +22,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MainActivity : PluginActivity() {
+class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
     companion object {
         private val RIC_SHOOTING_MODE = "RIC_SHOOTING_MODE"
         private val RIC_PROC_STITCHING = "RIC_PROC_STITCHING"
@@ -53,6 +53,10 @@ class MainActivity : PluginActivity() {
     private var isMultiShot: Boolean = false
     private var isLongShutter: Boolean = false
 
+    private var mLcdBrightness: Int = 64
+    private var mLedPowerBrightness:  IntArray = intArrayOf(0, 0, 0, 64)   //(dummy,R,G,B)
+    private var mLedStatusBrightness: IntArray = intArrayOf(0, 0, 0, 64)   //(dummy,R,G,B)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.i(TAG,"onCreate")
         super.onCreate(savedInstanceState)
@@ -63,6 +67,7 @@ class MainActivity : PluginActivity() {
         val switch_camera: Switch = findViewById<Switch>(R.id.switch_camera)
         val button_image: Button = findViewById<Button>(R.id.button_image)
         val button_video: Button = findViewById<Button>(R.id.button_video)
+        val spinner_ric_shooting_mode_preview: Spinner = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview)
         val spinner_ric_shooting_mode_image: Spinner = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_image)
         val spinner_ric_shooting_mode_video: Spinner = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_video)
         val spinner_ric_proc_stitching: Spinner      = findViewById<Spinner>(R.id.spinner_ric_proc_stitching)
@@ -105,9 +110,11 @@ class MainActivity : PluginActivity() {
         //Button : take picture
         button_image.setEnabled(false)
         button_image.setOnClickListener { _ ->
-            switch_camera.isClickable = false
-            enableAllButtons(false)
-            executeTakePicture()
+            if (button_image.isEnabled) {
+                switch_camera.isClickable = false
+                enableAllButtons(false)
+                executeTakePicture()
+            }
         }
 
         //Button : start and stop video recording
@@ -132,6 +139,7 @@ class MainActivity : PluginActivity() {
         }
 
         //Spinner : set Camera Parameters
+        spinner_ric_shooting_mode_preview.setSelection(0)       //RicPreview1024
         spinner_ric_shooting_mode_image.setSelection(0)         //RicStillCaptureStd
         spinner_ric_shooting_mode_video.setSelection(1)         //RicMovieRecording3840
         spinner_ric_proc_stitching.setSelection(2)              //RicDynamicStitchingAuto
@@ -171,6 +179,13 @@ class MainActivity : PluginActivity() {
         if (isInitialized) {
             openCamera(null)
             findViewById<Switch>(R.id.switch_camera).isChecked = true   //start camera
+        }
+    }
+
+    override fun onInfo(mr: MediaRecorder, what: Int, extra: Int) {
+        //Log.d(TAG, "onInfo() : what=" + what + ", extra=" + extra)
+        if (what == MediaRecorder.MEDIA_RECORDER_EVENT_RECORD_STOP) {
+            notificationAudioMovStop()
         }
     }
 
@@ -288,6 +303,7 @@ class MainActivity : PluginActivity() {
     fun executeTakePicture() {
         Log.i(TAG,"executeTakePicture")
         //executeStopPreview()
+        turnOnOffLcdLed(false)
         notificationAudioSelf()
         mCamera!!.apply {
             setCameraParameters(MODE.IMAGE)
@@ -348,6 +364,7 @@ class MainActivity : PluginActivity() {
                 notificationAudioClose()
             }
             isLongShutter = false
+            turnOnOffLcdLed(true)
         }
     }
 
@@ -358,7 +375,9 @@ class MainActivity : PluginActivity() {
             setCameraParameters(MODE.VIDEO)
         }
 
-        mRecorder = MediaRecorder().apply {
+        mRecorder = MediaRecorder()
+        mRecorder?.setOnInfoListener(this)
+        mRecorder!!.apply {
             //Context
             setMediaRecorderContext(getApplicationContext())
             //Audio Setting
@@ -425,7 +444,6 @@ class MainActivity : PluginActivity() {
     fun stopVideoRecording() {
         Log.i(TAG,"stopVideoRecording")
         mRecorder!!.apply {
-            notificationAudioMovStop()
             stop()
             release()
         }
@@ -437,6 +455,7 @@ class MainActivity : PluginActivity() {
     fun releaseMediaRecorder() {
         Log.i(TAG,"releaseMediaRecorder")
         if (mRecorder != null) {
+            mRecorder?.setOnInfoListener(null)
             mRecorder!!.release()
             mRecorder = null
         }
@@ -455,8 +474,13 @@ class MainActivity : PluginActivity() {
 
         when (mode) {
             MODE.PREVIEW -> {
-                p.set(RIC_SHOOTING_MODE, "RicPreview1024")
-                p.setPreviewSize(1024, 512)
+                val shooting_mode: String = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview).selectedItem.toString()
+                when (shooting_mode) {
+                    "RicPreview1024" -> { p.setPreviewSize(1024, 512) }
+                    "RicPreview1920" -> { p.setPreviewSize(1920, 960) }
+                    "RicPreview3840" -> { p.setPreviewSize(3840, 1920) }
+                    "RicPreview5760" -> { p.setPreviewSize(5760, 2880) }
+                }
                 p.setPreviewFrameRate(30)
             }
             MODE.IMAGE -> {
@@ -484,6 +508,7 @@ class MainActivity : PluginActivity() {
     // UI related functions
     //
     fun enableAllSpinners(flag: Boolean) {
+        findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview).isEnabled = flag
         findViewById<Spinner>(R.id.spinner_ric_shooting_mode_image).isEnabled = flag
         findViewById<Spinner>(R.id.spinner_ric_shooting_mode_video).isEnabled = flag
         findViewById<Spinner>(R.id.spinner_ric_proc_stitching).isEnabled = flag
@@ -500,5 +525,31 @@ class MainActivity : PluginActivity() {
         val button_video = findViewById<Button>(R.id.button_video)
         enableButton(button_image, flag)
         enableButton(button_video, flag)
+    }
+
+    fun turnOnOffLcdLed(flag: Boolean) {
+        //turn on LCD and LED
+        if (flag) {
+            mCamera!!.apply {
+                ctrlLcdBrightness(mLcdBrightness)
+                for (i in 1..3) {
+                    ctrlLedPowerBrightness(i, mLedPowerBrightness[i])
+                    ctrlLedStatusBrightness(i, mLedStatusBrightness[i])
+                }
+            }
+        }
+        //turn off LCD and LED
+        else {
+            mCamera!!.apply{
+                mLcdBrightness = lcdBrightness
+                ctrlLcdBrightness(0)
+                for (i in 1..3) {
+                    mLedPowerBrightness[i] = getLedPowerBrightness(i)
+                    mLedStatusBrightness[i] = getLedStatusBrightness(i)
+                    ctrlLedPowerBrightness(i, 0)
+                    ctrlLedStatusBrightness(i, 0)
+                }
+            }
+        }
     }
 }
