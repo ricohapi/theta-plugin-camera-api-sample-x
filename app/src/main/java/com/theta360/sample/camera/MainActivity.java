@@ -117,9 +117,11 @@ public class MainActivity extends PluginActivity {
         button_image.setEnabled(false);
         button_image.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                switch_camera.setClickable(false);
-                enableAllButtons(false);
-                executeTakePicture();
+                if (button_image.isEnabled()) {
+                    switch_camera.setClickable(false);
+                    enableAllButtons(false);
+                    executeTakePicture();
+                }
             }
         });
 
