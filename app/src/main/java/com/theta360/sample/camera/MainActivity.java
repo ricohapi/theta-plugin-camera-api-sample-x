@@ -26,7 +26,7 @@ import java.util.*;
 
 import static com.theta360.sample.camera.MainActivity.MODE.PREVIEW;
 
-public class MainActivity extends PluginActivity {
+public class MainActivity extends PluginActivity implements MediaRecorder.OnInfoListener {
 
     private String RIC_SHOOTING_MODE = "RIC_SHOOTING_MODE";
     private String RIC_PROC_STITCHING = "RIC_PROC_STITCHING";
@@ -56,6 +56,10 @@ public class MainActivity extends PluginActivity {
     private Boolean isMultiShot = false;
     private Boolean isLongShutter = false;
 
+    private Integer mLcdBrightness = 64;
+    private Integer[] mLedPowerBrightness = {0, 0, 0, 64};   //(dummy,R,G,B)
+    private Integer[] mLedStatusBrightness = {0, 0, 0, 64};   //(dummy,R,G,B)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate");
@@ -67,6 +71,7 @@ public class MainActivity extends PluginActivity {
         Switch switch_camera = findViewById(R.id.switch_camera);
         Button button_image = findViewById(R.id.button_image);
         Button button_video = findViewById(R.id.button_video);
+        Spinner spinner_ric_shooting_mode_preview = findViewById(R.id.spinner_ric_shooting_mode_preview);
         Spinner spinner_ric_shooting_mode_image = findViewById(R.id.spinner_ric_shooting_mode_image);
         Spinner spinner_ric_shooting_mode_video = findViewById(R.id.spinner_ric_shooting_mode_video);
         Spinner spinner_ric_proc_stitching = findViewById(R.id.spinner_ric_proc_stitching);
@@ -151,6 +156,7 @@ public class MainActivity extends PluginActivity {
         });
 
         //Spinner : set Camera Parameters
+        spinner_ric_shooting_mode_preview.setSelection(0);      //RicPreview1024
         spinner_ric_shooting_mode_image.setSelection(0);        //RicStillCaptureStd
         spinner_ric_shooting_mode_video.setSelection(1);        //RicMovieRecording3840
         spinner_ric_proc_stitching.setSelection(2);             //RicDynamicStitchingAuto
@@ -201,6 +207,14 @@ public class MainActivity extends PluginActivity {
             openCamera(null);
             Switch switch_camera = findViewById(R.id.switch_camera);
             switch_camera.setChecked(true);   //start camera
+        }
+    }
+
+    @Override
+    public void onInfo(MediaRecorder mr, int what, int extra) {
+        //Log.d(TAG, "onInfo() : what=" + what + ", extra=" + extra)
+        if (what == MediaRecorder.MEDIA_RECORDER_EVENT_RECORD_STOP) {
+            notificationAudioMovStop();
         }
     }
 
@@ -312,6 +326,7 @@ public class MainActivity extends PluginActivity {
     void executeTakePicture() {
         Log.i(TAG,"executeTakePicture");
         //executeStopPreview()
+        turnOnOffLcdLed(false);
         notificationAudioSelf();
         setCameraParameters(MODE.IMAGE);
         mCamera.takePicture(
@@ -380,6 +395,7 @@ public class MainActivity extends PluginActivity {
                 notificationAudioClose();
             }
             isLongShutter = false;
+            turnOnOffLcdLed(true);
         }
     };
 
@@ -389,6 +405,7 @@ public class MainActivity extends PluginActivity {
         setCameraParameters(MODE.VIDEO);
 
         mRecorder = new MediaRecorder();
+        mRecorder.setOnInfoListener(this);
         //Context
         mRecorder.setMediaRecorderContext(getApplicationContext());
         //Audio Setting
@@ -452,7 +469,6 @@ public class MainActivity extends PluginActivity {
 
     void stopVideoRecording() {
         Log.i(TAG,"stopVideoRecording");
-        notificationAudioMovStop();
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;
@@ -463,6 +479,7 @@ public class MainActivity extends PluginActivity {
     void releaseMediaRecorder() {
         Log.i(TAG,"releaseMediaRecorder");
         if (mRecorder != null) {
+            mRecorder.setOnInfoListener(null);
             mRecorder.release();
             mRecorder = null;
         }
@@ -485,8 +502,22 @@ public class MainActivity extends PluginActivity {
 
         switch (mode) {
             case PREVIEW:
-                p.set(RIC_SHOOTING_MODE, "RicPreview1024");
-                p.setPreviewSize(1024, 512);
+                Spinner spinner_ric_shooting_mode_preview = findViewById(R.id.spinner_ric_shooting_mode_preview);
+                String shooting_mode = spinner_ric_shooting_mode_preview.getSelectedItem().toString();
+                switch (shooting_mode) {
+                    case "RicPreview1024":
+                        p.setPreviewSize(1024, 512);
+                        break;
+                    case "RicPreview1920":
+                        p.setPreviewSize(1920, 960);
+                        break;
+                    case "RicPreview3840":
+                        p.setPreviewSize(3840, 1920);
+                        break;
+                    case "RicPreview5760":
+                        p.setPreviewSize(5760, 2880);
+                        break;
+                }
                 p.setPreviewFrameRate(30);
                 break;
             case IMAGE:
@@ -514,6 +545,7 @@ public class MainActivity extends PluginActivity {
     // UI related functions
     //
     void enableAllSpinners(Boolean flag) {
+        findViewById(R.id.spinner_ric_shooting_mode_preview).setEnabled(flag);
         findViewById(R.id.spinner_ric_shooting_mode_image).setEnabled(flag);
         findViewById(R.id.spinner_ric_shooting_mode_video).setEnabled(flag);
         findViewById(R.id.spinner_ric_proc_stitching).setEnabled(flag);
@@ -531,5 +563,27 @@ public class MainActivity extends PluginActivity {
         Button button_video = findViewById(R.id.button_video);
         enableButton(button_image, flag);
         enableButton(button_video, flag);
+    }
+
+    void turnOnOffLcdLed(Boolean flag) {
+        //turn on LCD and LED
+        if (flag) {
+            mCamera.ctrlLcdBrightness(mLcdBrightness);
+            for (int i = 1; i < 3; i++) {
+                mCamera.ctrlLedPowerBrightness(i, mLedPowerBrightness[i]);
+                mCamera.ctrlLedStatusBrightness(i, mLedStatusBrightness[i]);
+            }
+        }
+        //turn off LCD and LED
+        else {
+            mLcdBrightness = mCamera.getLcdBrightness();
+            mCamera.ctrlLcdBrightness(0);
+            for (int i = 1; i < 3; i++) {
+                mLedPowerBrightness[i] = mCamera.getLedPowerBrightness(i);
+                mLedStatusBrightness[i] = mCamera.getLedStatusBrightness(i);
+                mCamera.ctrlLedPowerBrightness(i, 0);
+                mCamera.ctrlLedStatusBrightness(i, 0);
+            }
+        }
     }
 }

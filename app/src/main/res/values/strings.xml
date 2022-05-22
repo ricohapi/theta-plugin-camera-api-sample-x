@@ -1,5 +1,11 @@
 <resources>
     <string name="app_name">Camera API Sample</string>
+    <string-array name="RIC_SHOOTING_MODE_PREVIEW_ARRAY">
+        <item>RicPreview1024</item>
+        <item>RicPreview1920</item>
+        <item>RicPreview3840</item>
+        <item>RicPreview5760</item>
+    </string-array>
     <string-array name="RIC_SHOOTING_MODE_IMAGE_ARRAY">
         <item>RicStillCaptureStd</item>
         <item>RicStillCaptureMultiRawNR</item>

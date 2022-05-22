@@ -1,8 +1,9 @@
 # THETA X Plug-in : Camera API Sample
 
-Version: 1.0.0
+Version: 1.0.1
 
 This sample project shows how to implement a plug-in using Camera API for RICOH THETA X.
+The program language is Kotlin, please checkout [java branch](https://github.com/ricohapi/theta-plugin-camera-api-sample-x/tree/java) to see Java code.
 
 ## Contents
 
@@ -27,6 +28,7 @@ This sample project shows how to implement a plug-in using Camera API for RICOH 
     > * ② Button to execute take picture
     > * ③ Button to execute start / stop video recording
     > * ④ Texture View to show preview picture
+    > * ⑨ Spinner to choose RIC_SHOOTING_MODE for preview mode
     > * ⑤ Spinner to choose RIC_SHOOTING_MODE for image mode
     > * ⑥ Spinner to choose RIC_SHOOTING_MODE for video mode
     > * ⑦ Spinner to choose RIC_PROC_STITCHING
