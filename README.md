@@ -77,7 +77,7 @@ The program language is Kotlin, please checkout [java branch](https://github.com
         ```gradle
         dependencies {
             ...
-            implementation 'com.theta360:pluginlibrary:3.0.2'
+            implementation 'com.theta360:pluginlibrary:3.0.4'
             ...
         }
         ```
