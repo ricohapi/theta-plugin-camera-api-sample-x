@@ -6,10 +6,12 @@ import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
 import android.view.TextureView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.Switch
 import com.theta360.pluginlibrary.activity.PluginActivity
+import com.theta360.pluginlibrary.activity.ThetaInfo
 import com.theta360.pluginlibrary.callback.KeyCallback
 import com.theta360.pluginlibrary.receiver.KeyReceiver
 import theta360.hardware.Camera
@@ -49,9 +51,12 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
     private var isInitialized: Boolean = false
     private var isCameraOpen:  Boolean = false
     private var isPreview:   Boolean = false
+    private var isCapturing: Boolean = false
     private var isRecording: Boolean = false
     private var isMultiShot: Boolean = false
     private var isLongShutter: Boolean = false
+
+    private var isLowPowerPreview: Boolean = false
 
     private var mLcdBrightness: Int = 64
     private var mLedPowerBrightness:  IntArray = intArrayOf(0, 0, 0, 64)   //(dummy,R,G,B)
@@ -138,7 +143,14 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             }
         }
 
+        //firmware check
+        var version = ThetaInfo.getThetaFirmwareVersion().replace(".", "").toFloat()
+        isLowPowerPreview = if (version >= 1200) true else false    //15fps preview available with fw1.20 or later
+
         //Spinner : set Camera Parameters
+        setSpinner(spinner_ric_shooting_mode_preview, getResources().getStringArray(
+            if (version >= 1200) R.array.RIC_SHOOTING_MODE_PREVIEW_ARRAY
+            else                 R.array.RIC_SHOOTING_MODE_PREVIEW_OLD_ARRAY))
         spinner_ric_shooting_mode_preview.setSelection(0)       //RicPreview1024
         spinner_ric_shooting_mode_image.setSelection(0)         //RicStillCaptureStd
         spinner_ric_shooting_mode_video.setSelection(1)         //RicMovieRecording3840
@@ -187,6 +199,12 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         if (what == MediaRecorder.MEDIA_RECORDER_EVENT_RECORD_STOP) {
             notificationAudioMovStop()
         }
+    }
+
+    private fun setSpinner(spinner: Spinner, arr: Array<String>){
+        var adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arr)
+        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.setAdapter(adapter)
     }
 
     //
@@ -264,7 +282,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             findViewById<Button>(R.id.button_video).callOnClick()           //stopVideoRecording()
         }
         //stop preview
-        if (isPreview) {
+        if (isPreview && !isCapturing) {
             findViewById<Switch>(R.id.switch_camera).isChecked = false      //executeStopPreview()
         }
         //close camera
@@ -307,6 +325,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         notificationAudioSelf()
         mCamera!!.apply {
             setCameraParameters(MODE.IMAGE)
+            isCapturing = true;
             takePicture(
                 shutterCallbackListner,
                 { data, _ ->
@@ -331,6 +350,9 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                         Log.e(TAG, e.message)
                     }
                     notificationDatabaseUpdate(mFilepath)
+
+                    isCapturing = false;
+
                     executeStartPreview()
 
                     //TODO
@@ -475,13 +497,20 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         when (mode) {
             MODE.PREVIEW -> {
                 val shooting_mode: String = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview).selectedItem.toString()
+                p.setPreviewFrameRate(if(isLowPowerPreview) 0 else 30)
                 when (shooting_mode) {
                     "RicPreview1024" -> { p.setPreviewSize(1024, 512) }
                     "RicPreview1920" -> { p.setPreviewSize(1920, 960) }
                     "RicPreview3840" -> { p.setPreviewSize(3840, 1920) }
                     "RicPreview5760" -> { p.setPreviewSize(5760, 2880) }
+                    "RicPreview1024:576" -> { p.setPreviewSize(1024, 576) }
+                    "RicPreview1920:1080" -> { p.setPreviewSize(1920, 1080) }
+                    "RicPreview3840:2160" -> { p.setPreviewSize(3840, 2160) }
+                    "RicPreview7680" -> {
+                        p.setPreviewSize(7680, 3840)
+                        p.setPreviewFrameRate(10)
+                    }
                 }
-                p.setPreviewFrameRate(30)
             }
             MODE.IMAGE -> {
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_image)

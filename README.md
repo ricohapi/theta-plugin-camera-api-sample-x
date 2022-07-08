@@ -1,6 +1,6 @@
 # THETA X Plug-in : Camera API Sample
 
-Version: 1.0.1
+Version: 1.1.0
 
 This sample project shows how to implement a plug-in using Camera API for RICOH THETA X.
 The program language is Kotlin, please checkout [java branch](https://github.com/ricohapi/theta-plugin-camera-api-sample-x/tree/java) to see Java code.
@@ -42,7 +42,7 @@ The program language is Kotlin, please checkout [java branch](https://github.com
 
 ### Supported Device
 
-* RICOH THETA X (Version 1.00.2, 1.00.1)
+* RICOH THETA X (Version 1.00.2, 1.10.1, 1.20.0)
 * RICOH THETA V and Z1 are NOT supported.
 
 ### Development Environment
@@ -55,7 +55,7 @@ The program language is Kotlin, please checkout [java branch](https://github.com
 * compileSdkVersion 29
 * minSdkVersion 25
 * targetSdkVersion 29
-* [RICOH THETA Plug-in Library](https://github.com/ricohapi/theta-plugin-library) (Version 3.0.2) is being imported.
+* [RICOH THETA Plug-in Library](https://github.com/ricohapi/theta-plugin-library) (Version 3.0.4) is being imported.
 
 
 <a name="how_to_use"></a>
@@ -219,6 +219,26 @@ The program language is Kotlin, please checkout [java branch](https://github.com
     | QUALITY_4K   | 0x0A | 128_000 | 1 | 3(AAC) | 48_000 | 1500 | 2(MPEG_4) | 1 | 54_000_000 | 2(H264) | 1920 | 3840 | 30 |
     | QUALITY_6K   | 0x0E | 128_000 | 1 | 3(AAC) | 48_000 | 1500 | 2(MPEG_4) | 1 | 64_000_000 | 2(H264) | 2880 | 5760 | 30 |
     | QUALITY_8K   | 0x0D | 128_000 | 1 | 3(AAC) | 48_000 | 1500 | 2(MPEG_4) | 1 | 64_000_000 | 2(H264) | 3840 | 7680 | 10 |
+
+### Low power preview mode (available Version 1.20.0 or later)
+
+* Preview will run at 15 fps as low power mode by setting preview frame rate to zero like following.
+
+    ```java
+    p.setPreviewFrameRate(0)
+    ```
+
+* Low power preview mode is available for following RIC_SHOOTING_MODE.
+
+    | RIC_SHOOTING_MODE | witch | height |
+    | --- | :---: | :---: |
+    | RicPreview1024      | 1024 | 512  |
+    | RicPreview1024:576  | 1024 | 576  |
+    | RicPreview1920      | 1920 | 960  |
+    | RicPreview1920:1080 | 1920 | 1080 |
+    | RicPreview3840      | 3840 | 1920 |
+    | RicPreview3840:2160 | 3840 | 2160 |
+    | RicPreview5760      | 5760 | 2880 |
 
 
 <a name="see_also"></a>
