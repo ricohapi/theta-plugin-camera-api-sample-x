@@ -7,24 +7,27 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
+
 import com.theta360.pluginlibrary.activity.PluginActivity;
+import com.theta360.pluginlibrary.activity.ThetaInfo;
 import com.theta360.pluginlibrary.callback.KeyCallback;
 import com.theta360.pluginlibrary.receiver.KeyReceiver;
-import theta360.hardware.Camera;
-import theta360.media.CamcorderProfile;
-import theta360.media.MediaRecorder;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
 
-import static com.theta360.sample.camera.MainActivity.MODE.PREVIEW;
+import theta360.hardware.Camera;
+import theta360.media.CamcorderProfile;
+import theta360.media.MediaRecorder;
 
 public class MainActivity extends PluginActivity implements MediaRecorder.OnInfoListener {
 
@@ -52,9 +55,12 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
     private Boolean isInitialized = false;
     private Boolean isCameraOpen = false;
     private Boolean isPreview = false;
+    private Boolean isCapturing = false;
     private Boolean isRecording = false;
     private Boolean isMultiShot = false;
     private Boolean isLongShutter = false;
+
+    private Boolean isLowPowerPreview = false;
 
     private Integer mLcdBrightness = 64;
     private Integer[] mLedPowerBrightness = {0, 0, 0, 64};   //(dummy,R,G,B)
@@ -155,7 +161,15 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
             }
         });
 
+        //firmware check
+        Float version = Float.parseFloat(ThetaInfo.getThetaFirmwareVersion().replace(".", ""));
+        Log.i(TAG,"version:"+version);
+        isLowPowerPreview = (version >= 1200)? true: false;     //15fps preview available with fw1.20 or later
+
         //Spinner : set Camera Parameters
+        setSpinner(spinner_ric_shooting_mode_preview, getResources().getStringArray(
+            (version >= 1200)? R.array.RIC_SHOOTING_MODE_PREVIEW_ARRAY:
+                               R.array.RIC_SHOOTING_MODE_PREVIEW_OLD_ARRAY));
         spinner_ric_shooting_mode_preview.setSelection(0);      //RicPreview1024
         spinner_ric_shooting_mode_image.setSelection(0);        //RicStillCaptureStd
         spinner_ric_shooting_mode_video.setSelection(1);        //RicMovieRecording3840
@@ -216,6 +230,12 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         if (what == MediaRecorder.MEDIA_RECORDER_EVENT_RECORD_STOP) {
             notificationAudioMovStop();
         }
+    }
+
+    void setSpinner(Spinner spinner, String[] arr){
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, arr);
+        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.setAdapter(adapter);
     }
 
     //
@@ -290,7 +310,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
             findViewById(R.id.button_video).callOnClick();          //stopVideoRecording()
         }
         //stop preview
-        if (isPreview) {
+        if (isPreview && !isCapturing) {
             Switch switch_camera = findViewById(R.id.switch_camera);
             switch_camera.setChecked(false);                        //executeStopPreview()
         }
@@ -309,7 +329,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         if (isPreview) {
             //return
         }
-        setCameraParameters(PREVIEW);
+        setCameraParameters(MODE.PREVIEW);
         mCamera.startPreview();
         isPreview = true;
     }
@@ -329,6 +349,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         turnOnOffLcdLed(false);
         notificationAudioSelf();
         setCameraParameters(MODE.IMAGE);
+        isCapturing = true;
         mCamera.takePicture(
             shutterCallbackListner,
             new Camera.PictureCallback() {
@@ -361,6 +382,9 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                         e.printStackTrace();
                     }
                     notificationDatabaseUpdate(mFilepath);
+
+                    isCapturing = false;
+
                     executeStartPreview();
 
                     //TODO
@@ -504,6 +528,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
             case PREVIEW:
                 Spinner spinner_ric_shooting_mode_preview = findViewById(R.id.spinner_ric_shooting_mode_preview);
                 String shooting_mode = spinner_ric_shooting_mode_preview.getSelectedItem().toString();
+                p.setPreviewFrameRate(30);
                 switch (shooting_mode) {
                     case "RicPreview1024":
                         p.setPreviewSize(1024, 512);
@@ -517,8 +542,20 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                     case "RicPreview5760":
                         p.setPreviewSize(5760, 2880);
                         break;
+                    case "RicPreview1024:576":
+                        p.setPreviewSize(1024, 576);
+                        break;
+                    case "RicPreview1920:1080":
+                        p.setPreviewSize(1920, 1080);
+                        break;
+                    case "RicPreview3840:2160":
+                        p.setPreviewSize(3840, 2160);
+                        break;
+                    case "RicPreview7680":
+                        p.setPreviewSize(7680, 3840);
+                        p.setPreviewFrameRate(10);
+                        break;
                 }
-                p.setPreviewFrameRate(30);
                 break;
             case IMAGE:
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_image);
