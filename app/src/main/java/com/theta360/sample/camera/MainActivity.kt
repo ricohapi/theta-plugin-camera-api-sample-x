@@ -81,7 +81,8 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         //KeyCallback
         setKeyCallback(object : KeyCallback {
             override fun onKeyDown(p0: Int, p1: KeyEvent?) {
-                if (p0 == KeyReceiver.KEYCODE_CAMERA){
+                if (p0 == KeyReceiver.KEYCODE_CAMERA ||
+                    p0 == KeyReceiver.KEYCODE_VOLUME_UP) {  //Bluetooth remote shutter
                     button_image.callOnClick()      //executeTakePicture()
                 }
             }
