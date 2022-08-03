@@ -87,7 +87,8 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         setKeyCallback(new KeyCallback() {
             @Override
             public void onKeyDown(int p0, KeyEvent p1) {
-                if (p0 == KeyReceiver.KEYCODE_CAMERA) {
+                if (p0 == KeyReceiver.KEYCODE_CAMERA ||
+                    p0 == KeyReceiver.KEYCODE_VOLUME_UP) {  //Bluetooth remote shutter
                     button_image.callOnClick();      //executeTakePicture()
                 }
             }
@@ -389,7 +390,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
 
                     //TODO
                     Switch switch_camera = findViewById(R.id.switch_camera);
-                    switch_camera.setEnabled(true);
+                    switch_camera.setClickable(true);
                     enableAllButtons(true);
                 }
             }
