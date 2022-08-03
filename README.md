@@ -1,6 +1,6 @@
 # THETA X Plug-in : Camera API Sample
 
-Version: 1.1.0
+Version: 1.2.0
 
 This sample project shows how to implement a plug-in using Camera API for RICOH THETA X.
 The program language is Kotlin, please checkout [java branch](https://github.com/ricohapi/theta-plugin-camera-api-sample-x/tree/java) to see Java code.
@@ -53,7 +53,7 @@ The program language is Kotlin, please checkout [java branch](https://github.com
 * gradle 4.2.2
 * Android&trade; SDK (API Level 29)
 * compileSdkVersion 29
-* minSdkVersion 25
+* minSdkVersion 26
 * targetSdkVersion 29
 * [RICOH THETA Plug-in Library](https://github.com/ricohapi/theta-plugin-library) (Version 3.0.4) is being imported.
 

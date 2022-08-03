@@ -62,6 +62,12 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
     private var mLedPowerBrightness:  IntArray = intArrayOf(0, 0, 0, 64)   //(dummy,R,G,B)
     private var mLedStatusBrightness: IntArray = intArrayOf(0, 0, 0, 64)   //(dummy,R,G,B)
 
+    //location
+    private val mLocationManager: LocationManagerUtil by lazy {
+        val manager = LocationManagerUtil(this)
+        manager
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.i(TAG,"onCreate")
         super.onCreate(savedInstanceState)
@@ -145,7 +151,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         }
 
         //firmware check
-        var version = ThetaInfo.getThetaFirmwareVersion().replace(".", "").toFloat()
+        val version = ThetaInfo.getThetaFirmwareVersion().replace(".", "").toFloat()
         isLowPowerPreview = if (version >= 1200) true else false    //15fps preview available with fw1.20 or later
 
         //Spinner : set Camera Parameters
@@ -181,6 +187,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         Log.i(TAG,"onPause")
         setAutoClose(false)     //the flag which does not finish plug-in in onPause
         closeCamera()
+        mLocationManager.stop()
         super.onPause()
     }
 
@@ -193,6 +200,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             openCamera(null)
             findViewById<Switch>(R.id.switch_camera).isChecked = true   //start camera
         }
+        mLocationManager.start()
     }
 
     override fun onInfo(mr: MediaRecorder, what: Int, extra: Int) {
@@ -203,7 +211,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
     }
 
     private fun setSpinner(spinner: Spinner, arr: Array<String>){
-        var adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arr)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arr)
         //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.setAdapter(adapter)
     }
@@ -214,7 +222,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
     private fun setFolderPath(): Boolean {
         mPath = PATH
         //check whether SD card is inserted
-        var files = File("/storage/").listFiles()
+        val files = File("/storage/").listFiles()
         if (files != null) {
             for (i in 0 until files.size) {
                 if (files[i].endsWith("emulated") || files[i].endsWith("self")) {
@@ -227,7 +235,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         }
         //directory check : DCIM
         try{
-            var file: File = File(mPath + DCIM)
+            val file = File(mPath + DCIM)
             if (!file.exists()) {
                 file.mkdir()
             }
@@ -237,7 +245,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         }
         //directory check : FOLDER
         try{
-            var file: File = File(mPath + FOLDER)
+            val file = File(mPath + FOLDER)
             if (!file.exists()) {
                 file.mkdir()
             }
@@ -326,7 +334,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         notificationAudioSelf()
         mCamera!!.apply {
             setCameraParameters(MODE.IMAGE)
-            isCapturing = true;
+            isCapturing = true
             takePicture(
                 shutterCallbackListner,
                 { data, _ ->
@@ -352,7 +360,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                     }
                     notificationDatabaseUpdate(mFilepath)
 
-                    isCapturing = false;
+                    isCapturing = false
 
                     executeStartPreview()
 
@@ -523,15 +531,20 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             }
         }
 
-        mCamera!!.setParameters(p)
+        //mCamera!!.setParameters(p)
         mCamera!!.setBrightnessMode(1) //Auto Control LCD/LED Brightness
 
-        //TODO if you want to put the location data, use setGPSxxxx APIs.
-        //p.setGpsLatitude(35.65859)
-        //p.setGpsLongitude(139.74543)
-        //p.setGpsAltitude(+15.5)
-        //p.setGpsTimestamp(System.currentTimeMillis() / 1000)   //need to set UTC seconds since 1970
-        //setParameters(p)
+        //if you want to put the location data, use setGPSxxxx APIs.
+        if (mLocationManager.check()) {
+            p.setGpsLatitude (mLocationManager.getLat())
+            p.setGpsLongitude(mLocationManager.getLng())
+            p.setGpsAltitude (mLocationManager.getAlt())
+            p.setGpsTimestamp(mLocationManager.getGpsTime())    //set UTC seconds since 1970
+        }
+        else {
+            p.removeGpsData()
+        }
+        mCamera!!.setParameters(p)
     }
 
     //
