@@ -1,5 +1,6 @@
 package com.theta360.sample.camera;
 
+import android.annotation.SuppressLint;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.Handler;
@@ -66,6 +67,9 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
     private Integer[] mLedPowerBrightness = {0, 0, 0, 64};   //(dummy,R,G,B)
     private Integer[] mLedStatusBrightness = {0, 0, 0, 64};   //(dummy,R,G,B)
 
+    //location
+    private LocationManagerUtil mLocationManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate");
@@ -87,7 +91,8 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         setKeyCallback(new KeyCallback() {
             @Override
             public void onKeyDown(int p0, KeyEvent p1) {
-                if (p0 == KeyReceiver.KEYCODE_CAMERA) {
+                if (p0 == KeyReceiver.KEYCODE_CAMERA ||
+                    p0 == KeyReceiver.KEYCODE_VOLUME_UP) {  //Bluetooth remote shutter
                     button_image.callOnClick();      //executeTakePicture()
                 }
             }
@@ -109,62 +114,52 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         });
 
         //Switch : start or stop camera preview
-        switch_camera.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    enableAllSpinners(false);
-                    enableAllButtons(true);
-                    executeStartPreview();
-                } else {
-                    enableAllSpinners(true);
-                    enableAllButtons(false);
-                    executeStopPreview();
-                }
+        switch_camera.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                enableAllSpinners(false);
+                enableAllButtons(true);
+                executeStartPreview();
+            } else {
+                enableAllSpinners(true);
+                enableAllButtons(false);
+                executeStopPreview();
             }
         });
 
         //Button : take picture
         button_image.setEnabled(false);
-        button_image.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (button_image.isEnabled()) {
-                    switch_camera.setClickable(false);
-                    enableAllButtons(false);
-                    executeTakePicture();
-                }
+        button_image.setOnClickListener(v -> {
+            if (button_image.isEnabled()) {
+                switch_camera.setClickable(false);
+                enableAllButtons(false);
+                executeTakePicture();
             }
         });
 
         //Button : start and stop video recording
         button_video.setEnabled(false);
-        button_video.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (!isRecording) {
-                    switch_camera.setClickable(false);
-                    enableAllButtons(false);
-                    startVideoRecording();
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            enableButton(button_video, true);
-                            button_video.setText(R.string.stop_video);
-                        }
-                    }, 1000);   //TODO
-                } else {
-                    switch_camera.setClickable(true);
-                    enableAllButtons(false);
-                    stopVideoRecording();
-                    enableAllButtons(true);
-                    button_video.setText(R.string.start_video);
-                }
+        button_video.setOnClickListener(v -> {
+            if (!isRecording) {
+                switch_camera.setClickable(false);
+                enableAllButtons(false);
+                startVideoRecording();
+                mHandler.postDelayed(() -> {
+                    enableButton(button_video, true);
+                    button_video.setText(R.string.stop_video);
+                }, 1000);   //TODO
+            } else {
+                switch_camera.setClickable(true);
+                enableAllButtons(false);
+                stopVideoRecording();
+                enableAllButtons(true);
+                button_video.setText(R.string.start_video);
             }
         });
 
         //firmware check
-        Float version = Float.parseFloat(ThetaInfo.getThetaFirmwareVersion().replace(".", ""));
+        float version = Float.parseFloat(ThetaInfo.getThetaFirmwareVersion().replace(".", ""));
         Log.i(TAG,"version:"+version);
-        isLowPowerPreview = (version >= 1200)? true: false;     //15fps preview available with fw1.20 or later
+        isLowPowerPreview = version >= 1200;     //15fps preview available with fw1.20 or later
 
         //Spinner : set Camera Parameters
         setSpinner(spinner_ric_shooting_mode_preview, getResources().getStringArray(
@@ -201,6 +196,9 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                 //do nothing
             }
         });
+
+        //location
+        mLocationManager = new LocationManagerUtil(this);
     }
 
     @Override
@@ -208,6 +206,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         Log.i(TAG,"onPause");
         setAutoClose(false);    //the flag which does not finish plug-in in onPause
         closeCamera();
+        mLocationManager.stop();
         super.onPause();
     }
 
@@ -222,6 +221,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
             Switch switch_camera = findViewById(R.id.switch_camera);
             switch_camera.setChecked(true);   //start camera
         }
+        mLocationManager.start();
     }
 
     @Override
@@ -247,11 +247,11 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         File dir = new File("/storage/");
         File[] files = dir.listFiles();
         if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].toString().endsWith("emulated") || files[i].toString().endsWith("self")) {
+            for (File file : files) {
+                if (file.toString().endsWith("emulated") || file.toString().endsWith("self")) {
                     //ignored
                 } else {
-                    mPath = files[i].toString();
+                    mPath = file.toString();
                     break;
                 }
             }
@@ -274,6 +274,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         return true;
     }
 
+    @SuppressLint("SimpleDateFormat")
     private File getOutputMediaFile() {
         if (!setFolderPath()) {
             return null;
@@ -352,21 +353,9 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         isCapturing = true;
         mCamera.takePicture(
             shutterCallbackListner,
-            new Camera.PictureCallback() {
-                @Override
-                public void onPictureTaken (byte[] bytes, Camera camera) {
-                    Log.i(TAG,"receive raw callback");
-                }
-            },
-            new Camera.PictureCallback() {
-                @Override
-                public void onPictureTaken (byte[] bytes, Camera camera) {
-                    Log.i(TAG, "receive postview callback");
-                }
-            },
-            new Camera.PictureCallback() {
-                @Override
-                public void onPictureTaken (byte[] bytes, Camera camera) {
+                (bytes, camera) -> Log.i(TAG,"receive raw callback"),
+                (bytes, camera) -> Log.i(TAG, "receive postview callback"),
+                (bytes, camera) -> {
                     Log.i(TAG, "receive jpeg callback");
                     File pictureFile = getOutputMediaFile();
                     if (pictureFile == null) {
@@ -376,8 +365,6 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                         FileOutputStream fos = new FileOutputStream(pictureFile);
                         fos.write(bytes);
                         fos.close();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -389,10 +376,9 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
 
                     //TODO
                     Switch switch_camera = findViewById(R.id.switch_camera);
-                    switch_camera.setEnabled(true);
+                    switch_camera.setClickable(true);
                     enableAllButtons(true);
                 }
-            }
         );
     }
 
@@ -423,6 +409,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         }
     };
 
+    @SuppressLint("SimpleDateFormat")
     private void startVideoRecording() {
         Log.i(TAG,"startVideoRecording");
 
@@ -559,7 +546,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                 break;
             case IMAGE:
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_image);
-                isMultiShot = ric_shooting_mode_image.equals("RicStillCaptureStd")? false: true;
+                isMultiShot = !ric_shooting_mode_image.equals("RicStillCaptureStd");
                 p.setPictureSize(11008, 5504);   //11008*5504 or 5504*2752
                 break;
             case VIDEO:
@@ -567,15 +554,20 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                 break;
         }
 
-        mCamera.setParameters(p);
+        //mCamera.setParameters(p);
         mCamera.setBrightnessMode(1); //Auto Control LCD/LED Brightness
 
-        //TODO if you want to put the location data, use setGPSxxxx APIs.
-        //p.setGpsLatitude(35.65859)
-        //p.setGpsLongitude(139.74543)
-        //p.setGpsAltitude(+15.5)
-        //p.setGpsTimestamp(System.currentTimeMillis() / 1000)   //need to set UTC seconds since 1970
-        //setParameters(p)
+        //if you want to put the location data, use setGPSxxxx APIs.
+        if (mLocationManager.check()) {
+            p.setGpsLatitude (mLocationManager.getLat());
+            p.setGpsLongitude(mLocationManager.getLng());
+            p.setGpsAltitude (mLocationManager.getAlt());
+            p.setGpsTimestamp(mLocationManager.getGpsTime());    //set UTC seconds since 1970
+        }
+        else {
+            p.removeGpsData();
+        }
+        mCamera.setParameters(p);
     }
 
     //
