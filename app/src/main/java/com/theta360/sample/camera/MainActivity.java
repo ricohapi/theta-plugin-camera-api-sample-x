@@ -441,7 +441,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         Spinner spinner_ric_shooting_mode_video = findViewById(R.id.spinner_ric_shooting_mode_video);
         String shooting_mode = spinner_ric_shooting_mode_video.getSelectedItem().toString();
         switch (shooting_mode) {
-            case "RicVideoRecording1920":
+            case "RicMovieRecording1920":
                 mRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_2K));
                 mRecorder.setVideoEncodingIFrameInterval(1.0f);
                 break;
@@ -449,7 +449,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                 mRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_4K));
                 mRecorder.setVideoEncodingIFrameInterval(1.0f);
                 break;
-            case "RicVideoRecording5760":
+            case "RicMovieRecording5760":
                 mRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_6K));
                 mRecorder.setVideoEncodingIFrameInterval(1.0f);
                 break;
@@ -551,6 +551,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                 break;
             case VIDEO:
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_video);
+                p.set(Camera.Parameters.VIDEO_PREVIEW_SWITCH, 0);
                 break;
         }
 
