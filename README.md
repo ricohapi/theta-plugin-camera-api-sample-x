@@ -1,6 +1,6 @@
 # THETA X Plug-in : Camera API Sample
 
-Version: 1.2.0
+Version: 1.2.1
 
 This sample project shows how to implement a plug-in using Camera API for RICOH THETA X.
 The program language is Kotlin, please checkout [java branch](https://github.com/ricohapi/theta-plugin-camera-api-sample-x/tree/java) to see Java code.
@@ -42,7 +42,7 @@ The program language is Kotlin, please checkout [java branch](https://github.com
 
 ### Supported Device
 
-* RICOH THETA X (Version 1.00.2, 1.10.1, 1.20.0)
+* RICOH THETA X (Version 1.00.2, 1.10.1, 1.20.0, 1.30.0)
 * RICOH THETA V and Z1 are NOT supported.
 
 ### Development Environment
@@ -219,6 +219,17 @@ The program language is Kotlin, please checkout [java branch](https://github.com
     | QUALITY_4K   | 0x0A | 128_000 | 1 | 3(AAC) | 48_000 | 1500 | 2(MPEG_4) | 1 | 54_000_000 | 2(H264) | 1920 | 3840 | 30 |
     | QUALITY_6K   | 0x0E | 128_000 | 1 | 3(AAC) | 48_000 | 1500 | 2(MPEG_4) | 1 | 64_000_000 | 2(H264) | 2880 | 5760 | 30 |
     | QUALITY_8K   | 0x0D | 128_000 | 1 | 3(AAC) | 48_000 | 1500 | 2(MPEG_4) | 1 | 64_000_000 | 2(H264) | 3840 | 7680 | 10 |
+
+* Tips : You can disable showing liveview picture during video recording by setting following Camera.Parameter.
+
+    ```java
+    /**
+     * @brief disable generating liveview picture during video recording, e.g. to reduce power.
+     * @value 0 : enable (default)
+     *        1 : disable
+     */
+    p.set(Camera.Parameters.VIDEO_PREVIEW_SWITCH, 0)
+    ```
 
 ### Low power preview mode (available Version 1.20.0 or later)
 

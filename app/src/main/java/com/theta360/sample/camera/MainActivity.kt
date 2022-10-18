@@ -432,7 +432,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             //FYI: use setProfile to set configuration easily
             val shooting_mode: String = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_video).selectedItem.toString()
             when (shooting_mode) {
-                "RicVideoRecording1920" -> {
+                "RicMovieRecording1920" -> {
                     setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_2K))
                     setVideoEncodingIFrameInterval(1.0f)
                 }
@@ -440,7 +440,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                     setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_4K))
                     setVideoEncodingIFrameInterval(1.0f)
                 }
-                "RicVideoRecording5760" -> {
+                "RicMovieRecording5760" -> {
                     setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_6K))
                     setVideoEncodingIFrameInterval(1.0f)
                 }
@@ -528,6 +528,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             }
             MODE.VIDEO -> {
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_video)
+                p.set(Camera.Parameters.VIDEO_PREVIEW_SWITCH, 0)
             }
         }
 
