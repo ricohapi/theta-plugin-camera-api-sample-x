@@ -36,6 +36,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
     private String RIC_PROC_STITCHING = "RIC_PROC_STITCHING";
     private String RIC_PROC_ZENITH_CORRECTION = "RIC_PROC_ZENITH_CORRECTION";
     private String RIC_EXPOSURE_MODE = "RIC_EXPOSURE_MODE";
+    private String RIC_WATER_HOUSING = "RIC_WATER_HOUSING";
 
     private String TAG = "Camera_API_Sample";
     private String DCIM = "/DCIM/";
@@ -510,6 +511,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         p.set(RIC_PROC_STITCHING,         ric_proc_stitching);
         p.set(RIC_PROC_ZENITH_CORRECTION, ric_proc_zenith_correction);
         p.set(RIC_EXPOSURE_MODE, "RicAutoExposureP");
+        p.set(RIC_WATER_HOUSING, 0);
 
         switch (mode) {
             case PREVIEW:
