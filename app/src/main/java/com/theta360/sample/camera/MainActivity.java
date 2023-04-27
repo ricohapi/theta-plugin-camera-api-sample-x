@@ -1,36 +1,36 @@
 package com.theta360.sample.camera;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.TextureView;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
 
 import com.theta360.pluginlibrary.activity.PluginActivity;
 import com.theta360.pluginlibrary.activity.ThetaInfo;
 import com.theta360.pluginlibrary.callback.KeyCallback;
+import com.theta360.pluginlibrary.factory.Camera;
 import com.theta360.pluginlibrary.receiver.KeyReceiver;
 
+import com.theta360.pluginlibrary.factory.FactoryBase;
+import com.theta360.pluginlibrary.factory.XCamera;
+
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import theta360.hardware.Camera;
-import theta360.media.CamcorderProfile;
 import theta360.media.MediaRecorder;
 
-public class MainActivity extends PluginActivity implements MediaRecorder.OnInfoListener {
+
+public class MainActivity extends PluginActivity {
 
     private String RIC_SHOOTING_MODE = "RIC_SHOOTING_MODE";
     private String RIC_PROC_STITCHING = "RIC_PROC_STITCHING";
@@ -49,7 +49,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
     }
 
     private Handler mHandler = new Handler();
-    private Camera mCamera = null;
+    private Camera mXCamera = null;
     private MediaRecorder mRecorder = null;
     private String mPath = "";
     public String mFilepath = "";
@@ -178,7 +178,11 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
 
             @Override
             public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-                openCamera(surface);             //open camera
+                try {
+                    openCamera(surface);             //open camera
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 switch_camera.setChecked(true);  //start preview
             }
 
@@ -195,6 +199,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
             @Override
             public void onSurfaceTextureUpdated(SurfaceTexture surface) {
                 //do nothing
+                Log.d(TAG, "onSurfaceTextureUpdated");
             }
         });
 
@@ -218,19 +223,15 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         super.onResume();
 
         if (isInitialized) {
-            openCamera(null);
+            try {
+                openCamera(null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             Switch switch_camera = findViewById(R.id.switch_camera);
             switch_camera.setChecked(true);   //start camera
         }
         mLocationManager.start();
-    }
-
-    @Override
-    public void onInfo(MediaRecorder mr, int what, int extra) {
-        //Log.d(TAG, "onInfo() : what=" + what + ", extra=" + extra)
-        if (what == MediaRecorder.MEDIA_RECORDER_EVENT_RECORD_STOP) {
-            notificationAudioMovStop();
-        }
     }
 
     void setSpinner(Spinner spinner, String[] arr){
@@ -288,21 +289,29 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
     //
     // camera controlling related functions
     //
-    void openCamera(SurfaceTexture surface) {
+    void openCamera(SurfaceTexture surface) throws IOException {
         Log.i(TAG, "openCamera");
         if (isCameraOpen) {
             return;
         }
-        //open camera with id setting CAMERA_FACING_DOUBLE directly
-        mCamera = Camera.open(this, Camera.CameraInfo.CAMERA_FACING_DOUBLE);
+        Context context = this;
+        FactoryBase factory = new FactoryBase();
+        mXCamera = (XCamera) factory.abstractCamera(FactoryBase.CameraModel.XCamera);
+        //int facing = com.theta360.pluginlibrary.factory.Camera.CameraInfo.CAMERA_FACING_DOUBLE;
+        mXCamera.open(context, 2);
+
         isCameraOpen = true;
         if (surface!=null) {
             try {
-                mCamera.setPreviewTexture(surface);
+                mXCamera.setPreviewTexture(surface);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             isInitialized = true;
+        }
+
+        if (mXCamera == null) {
+            throw new RuntimeException("Unable to open camera");
         }
     }
 
@@ -319,9 +328,9 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         //close camera
         if (isCameraOpen) {
             Log.i(TAG, "closeCamera");
-            mCamera.setPreviewCallback(null);
-            mCamera.release();
-            mCamera = null;
+            mXCamera.setPreviewCallback(null);
+            mXCamera.release();
+            mXCamera = null;
             isCameraOpen = false;
         }
     }
@@ -332,7 +341,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
             //return
         }
         setCameraParameters(MODE.PREVIEW);
-        mCamera.startPreview();
+        mXCamera.startPreview();
         isPreview = true;
     }
 
@@ -341,12 +350,13 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         if (!isPreview) {
             //return
         }
-        mCamera.stopPreview();
+        mXCamera.stopPreview();
         isPreview = false;
     }
 
     void executeTakePicture() {
         Log.i(TAG,"executeTakePicture");
+        /*
         //executeStopPreview()
         turnOnOffLcdLed(false);
         notificationAudioSelf();
@@ -381,6 +391,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                     enableAllButtons(true);
                 }
         );
+        */
     }
 
     Camera.ShutterCallback shutterCallbackListner = new Camera.ShutterCallback() {
@@ -413,7 +424,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
     @SuppressLint("SimpleDateFormat")
     private void startVideoRecording() {
         Log.i(TAG,"startVideoRecording");
-
+        /*
         setCameraParameters(MODE.VIDEO);
 
         mRecorder = new MediaRecorder();
@@ -477,15 +488,18 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         notificationAudioMovStart();
         isRecording = true;
         mRecorder.start();
+        */
     }
 
     void stopVideoRecording() {
         Log.i(TAG,"stopVideoRecording");
+        /*
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;
         isRecording = false;
         notificationDatabaseUpdate(mFilepath);
+        */
     }
 
     void releaseMediaRecorder() {
@@ -507,7 +521,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         String ric_proc_stitching      = spinner_ric_proc_stitching.getSelectedItem().toString();
         String ric_proc_zenith_correction = spinner_ric_proc_zenith_correction.getSelectedItem().toString();
 
-        Camera.Parameters p = mCamera.getParameters();
+        com.theta360.pluginlibrary.factory.Camera.Parameters p = mXCamera.getParameters();
         p.set(RIC_PROC_STITCHING,         ric_proc_stitching);
         p.set(RIC_PROC_ZENITH_CORRECTION, ric_proc_zenith_correction);
         p.set(RIC_EXPOSURE_MODE, "RicAutoExposureP");
@@ -553,24 +567,24 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                 break;
             case VIDEO:
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_video);
-                p.set(Camera.Parameters.VIDEO_PREVIEW_SWITCH, 0);
+                //p.set(Camera.Parameters.VIDEO_PREVIEW_SWITCH, 0);
                 break;
         }
 
         //mCamera.setParameters(p);
-        mCamera.setBrightnessMode(1); //Auto Control LCD/LED Brightness
+        //mXCamera.setBrightnessMode(1); //Auto Control LCD/LED Brightness
 
         //if you want to put the location data, use setGPSxxxx APIs.
         if (mLocationManager.check()) {
-            p.setGpsLatitude (mLocationManager.getLat());
-            p.setGpsLongitude(mLocationManager.getLng());
-            p.setGpsAltitude (mLocationManager.getAlt());
-            p.setGpsTimestamp(mLocationManager.getGpsTime());    //set UTC seconds since 1970
+            //p.setGpsLatitude (mLocationManager.getLat());
+            //p.setGpsLongitude(mLocationManager.getLng());
+            //p.setGpsAltitude (mLocationManager.getAlt());
+            //p.setGpsTimestamp(mLocationManager.getGpsTime());    //set UTC seconds since 1970
         }
         else {
-            p.removeGpsData();
+            //p.removeGpsData();
         }
-        mCamera.setParameters(p);
+        mXCamera.setParameters();
     }
 
     //
@@ -600,21 +614,21 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
     void turnOnOffLcdLed(Boolean flag) {
         //turn on LCD and LED
         if (flag) {
-            mCamera.ctrlLcdBrightness(mLcdBrightness);
+            mXCamera.ctrlLcdBrightness(mLcdBrightness);
             for (int i = 1; i < 3; i++) {
-                mCamera.ctrlLedPowerBrightness(i, mLedPowerBrightness[i]);
-                mCamera.ctrlLedStatusBrightness(i, mLedStatusBrightness[i]);
+                mXCamera.ctrlLedPowerBrightness(i, mLedPowerBrightness[i]);
+                mXCamera.ctrlLedStatusBrightness(i, mLedStatusBrightness[i]);
             }
         }
         //turn off LCD and LED
         else {
-            mLcdBrightness = mCamera.getLcdBrightness();
-            mCamera.ctrlLcdBrightness(0);
+            mLcdBrightness = mXCamera.getLcdBrightness();
+            mXCamera.ctrlLcdBrightness(0);
             for (int i = 1; i < 3; i++) {
-                mLedPowerBrightness[i] = mCamera.getLedPowerBrightness(i);
-                mLedStatusBrightness[i] = mCamera.getLedStatusBrightness(i);
-                mCamera.ctrlLedPowerBrightness(i, 0);
-                mCamera.ctrlLedStatusBrightness(i, 0);
+                mLedPowerBrightness[i] = mXCamera.getLedPowerBrightness(i);
+                mLedStatusBrightness[i] = mXCamera.getLedStatusBrightness(i);
+                mXCamera.ctrlLedPowerBrightness(i, 0);
+                mXCamera.ctrlLedStatusBrightness(i, 0);
             }
         }
     }
