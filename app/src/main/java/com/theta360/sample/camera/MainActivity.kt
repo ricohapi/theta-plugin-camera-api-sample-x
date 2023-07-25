@@ -30,6 +30,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         private val RIC_PROC_STITCHING = "RIC_PROC_STITCHING"
         private val RIC_PROC_ZENITH_CORRECTION = "RIC_PROC_ZENITH_CORRECTION"
         private val RIC_EXPOSURE_MODE = "RIC_EXPOSURE_MODE"
+        private val RIC_FACE_DETECTION = "RIC_FACE_DETECTION"
         private val RIC_WATER_HOUSING = "RIC_WATER_HOUSING"
 
         private val TAG = "Camera_API_Sample"
@@ -503,6 +504,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         p.set(RIC_PROC_STITCHING,         ric_proc_stitching)
         p.set(RIC_PROC_ZENITH_CORRECTION, ric_proc_zenith_correction)
         p.set(RIC_EXPOSURE_MODE, "RicAutoExposureP")
+        p.set(RIC_FACE_DETECTION, 0)
         p.set(RIC_WATER_HOUSING, 0)
 
         when (mode) {
