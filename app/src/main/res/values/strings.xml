@@ -38,6 +38,10 @@
         <item>RicZenithCorrectionOnAuto</item>
         <item>RicZenithCorrectionOnManual</item>
     </string-array>
+    <string-array name="PICTURE_FORMAT">
+        <item>ImageFormat.JPEG</item>
+        <item>ImageFormat.NV21</item>
+    </string-array>
     <string name="start_video">START VIDEO</string>
     <string name="stop_video">STOP VIDEO</string>
     <string name="take_picture">TAKE PICTURE</string>

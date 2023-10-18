@@ -1,5 +1,6 @@
 package com.theta360.sample.camera
 
+import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.os.Bundle
 import android.os.Handler
@@ -59,6 +60,8 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
     private var isLongShutter: Boolean = false
 
     private var isLowPowerPreview: Boolean = false
+    private var isNV21Available: Boolean   = false
+    private var isJPEG: Boolean = true
 
     private var mLcdBrightness: Int = 64
     private var mLedPowerBrightness:  IntArray = intArrayOf(0, 0, 0, 64)   //(dummy,R,G,B)
@@ -85,6 +88,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         val spinner_ric_shooting_mode_video: Spinner = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_video)
         val spinner_ric_proc_stitching: Spinner      = findViewById<Spinner>(R.id.spinner_ric_proc_stitching)
         val spinner_ric_proc_zenith_correction: Spinner = findViewById<Spinner>(R.id.spinner_ric_proc_zenith_correction)
+        val spinner_picture_format: Spinner             = findViewById<Spinner>(R.id.spinner_picture_format)
 
         //KeyCallback
         setKeyCallback(object : KeyCallback {
@@ -155,6 +159,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         //firmware check
         val version = ThetaInfo.getThetaFirmwareVersion().replace(".", "").toFloat()
         isLowPowerPreview = if (version >= 1200) true else false    //15fps preview available with fw1.20 or later
+        isNV21Available   = if (version >= 2300) true else false    //NV21 picture format available with fw2.30 or later
 
         //Spinner : set Camera Parameters
         setSpinner(spinner_ric_shooting_mode_preview, getResources().getStringArray(
@@ -165,6 +170,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         spinner_ric_shooting_mode_video.setSelection(1)         //RicMovieRecording3840
         spinner_ric_proc_stitching.setSelection(2)              //RicDynamicStitchingAuto
         spinner_ric_proc_zenith_correction.setSelection(1)      //RicZenithCorrectionOnAuto
+        spinner_picture_format.setSelection(0)                  //ImageFormat.JPEG
 
         //TextureView : show preview
         val texture_view = findViewById<TextureView>(R.id.texture_view)
@@ -260,12 +266,13 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         return true
     }
 
-    private fun getOutputMediaFile(): File? {
+    private fun getOutputMediaFile(isJPEG: Boolean): File? {
         if (!setFolderPath()) {
             return null
         }
-        mFilepath = mPath + "PC" + SimpleDateFormat("HHmmss").format(Date()) + ".JPG"
-        Log.i(TAG, "JPEG file path = " + mFilepath)
+        mFilepath  = mPath + "PC" + SimpleDateFormat("HHmmss").format(Date())
+        mFilepath += if(isJPEG) ".JPG" else ".NV21"
+        Log.i(TAG, "file path = " + mFilepath)
         return File(mFilepath)
     }
 
@@ -347,7 +354,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                 },
                 Camera.PictureCallback{ data, _ ->
                     Log.i(TAG,"receive jpeg callback")
-                    val pictureFile: File = getOutputMediaFile() ?: run {
+                    val pictureFile: File = getOutputMediaFile(isJPEG) ?: run {
                         Log.e(TAG, "cannot create file")
                         return@PictureCallback
                     }
@@ -499,6 +506,8 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         val ric_shooting_mode_video: String = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_video).selectedItem.toString()
         val ric_proc_stitching: String      = findViewById<Spinner>(R.id.spinner_ric_proc_stitching).selectedItem.toString()
         val ric_proc_zenith_correction: String = findViewById<Spinner>(R.id.spinner_ric_proc_zenith_correction).selectedItem.toString()
+        val picture_format: String             = findViewById<Spinner>(R.id.spinner_picture_format).selectedItem.toString()
+        val picture_format_array: Array<String> = resources.getStringArray(R.array.PICTURE_FORMAT)
 
         val p = mCamera!!.getParameters()
         p.set(RIC_PROC_STITCHING,         ric_proc_stitching)
@@ -529,6 +538,14 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_image)
                 isMultiShot = if(ric_shooting_mode_image.equals("RicStillCaptureStd")) false else true
                 p.setPictureSize(11008, 5504)   //11008*5504 or 5504*2752
+                if (picture_format == picture_format_array[0]) { //JPEG or NV21
+                    p.pictureFormat = ImageFormat.JPEG
+                    isJPEG = true
+                }
+                else {
+                    p.pictureFormat = ImageFormat.NV21
+                    isJPEG = false
+                }
             }
             MODE.VIDEO -> {
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_video)
@@ -561,6 +578,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         findViewById<Spinner>(R.id.spinner_ric_shooting_mode_video).isEnabled = flag
         findViewById<Spinner>(R.id.spinner_ric_proc_stitching).isEnabled = flag
         findViewById<Spinner>(R.id.spinner_ric_proc_zenith_correction).isEnabled = flag
+        findViewById<Spinner>(R.id.spinner_picture_format).isEnabled = if (isNV21Available) flag else false
     }
 
     fun enableButton(button: Button, flag: Boolean) {
