@@ -26,7 +26,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/button_image"
-        app:layout_constraintTop_toBottomOf="@+id/spinner_ric_proc_zenith_correction" />
+        app:layout_constraintTop_toBottomOf="@+id/spinner_picture_format" />
 
     <Button
         android:id="@+id/button_image"
@@ -38,7 +38,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/switch_camera"
         app:layout_constraintStart_toEndOf="@+id/button_video"
-        app:layout_constraintTop_toBottomOf="@+id/spinner_ric_proc_zenith_correction"
+        app:layout_constraintTop_toBottomOf="@+id/spinner_picture_format"
         app:layout_constraintVertical_bias="0.50" />
 
     <Button
@@ -54,14 +54,14 @@
         app:layout_constraintEnd_toStartOf="@+id/button_image"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spinner_ric_proc_zenith_correction" />
+        app:layout_constraintTop_toBottomOf="@+id/spinner_picture_format" />
 
     <Spinner
         android:id="@+id/spinner_ric_shooting_mode_preview"
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -73,7 +73,7 @@
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         android:entries="@array/RIC_SHOOTING_MODE_IMAGE_ARRAY"
         app:layout_constraintEnd_toEndOf="parent"
@@ -86,7 +86,7 @@
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         android:entries="@array/RIC_SHOOTING_MODE_VIDEO_ARRAY"
         app:layout_constraintEnd_toEndOf="parent"
@@ -99,7 +99,7 @@
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         android:entries="@array/RIC_PROC_STITCHING_ARRAY"
         app:layout_constraintEnd_toEndOf="parent"
@@ -112,12 +112,25 @@
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         android:entries="@array/RIC_PROC_ZENITH_CORRECTION_ARRAY"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner_ric_proc_stitching" />
+
+    <Spinner
+        android:id="@+id/spinner_picture_format"
+        android:layout_width="0dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
+        android:entries="@array/PICTURE_FORMAT"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/spinner_ric_proc_zenith_correction" />
 
 </android.support.constraint.ConstraintLayout>

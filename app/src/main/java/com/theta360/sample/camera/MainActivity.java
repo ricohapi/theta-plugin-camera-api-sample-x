@@ -1,6 +1,7 @@
 package com.theta360.sample.camera;
 
 import android.annotation.SuppressLint;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.Handler;
@@ -64,6 +65,8 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
     private Boolean isLongShutter = false;
 
     private Boolean isLowPowerPreview = false;
+    private Boolean isNV21Available = false;
+    private Boolean isJPEG = true;
 
     private Integer mLcdBrightness = 64;
     private Integer[] mLedPowerBrightness = {0, 0, 0, 64};   //(dummy,R,G,B)
@@ -88,6 +91,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         Spinner spinner_ric_shooting_mode_video = findViewById(R.id.spinner_ric_shooting_mode_video);
         Spinner spinner_ric_proc_stitching = findViewById(R.id.spinner_ric_proc_stitching);
         Spinner spinner_ric_proc_zenith_correction = findViewById(R.id.spinner_ric_proc_zenith_correction);
+        Spinner spinner_picture_format             = findViewById(R.id.spinner_picture_format);
 
         //KeyCallback
         setKeyCallback(new KeyCallback() {
@@ -162,6 +166,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         float version = Float.parseFloat(ThetaInfo.getThetaFirmwareVersion().replace(".", ""));
         Log.i(TAG,"version:"+version);
         isLowPowerPreview = version >= 1200;     //15fps preview available with fw1.20 or later
+        isNV21Available   = version >= 2300;     //NV21 picture format available with fw2.30 or later
 
         //Spinner : set Camera Parameters
         setSpinner(spinner_ric_shooting_mode_preview, getResources().getStringArray(
@@ -172,6 +177,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         spinner_ric_shooting_mode_video.setSelection(1);        //RicMovieRecording3840
         spinner_ric_proc_stitching.setSelection(2);             //RicDynamicStitchingAuto
         spinner_ric_proc_zenith_correction.setSelection(1);     //RicZenithCorrectionOnAuto
+        spinner_picture_format.setSelection(0);                 //ImageFormat.JPEG
 
         //TextureView : show preview
         TextureView texture_view = findViewById(R.id.texture_view);
@@ -277,12 +283,13 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
     }
 
     @SuppressLint("SimpleDateFormat")
-    private File getOutputMediaFile() {
+    private File getOutputMediaFile(Boolean isJPEG) {
         if (!setFolderPath()) {
             return null;
         }
-        mFilepath = mPath + "PC" + (new SimpleDateFormat("HHmmss")).format(new Date()) + ".JPG";
-        Log.i(TAG, "JPEG file path = " + mFilepath);
+        mFilepath  = mPath + "PC" + (new SimpleDateFormat("HHmmss")).format(new Date());
+        mFilepath += (isJPEG)? ".JPG" : ".NV21";
+        Log.i(TAG, "file path = " + mFilepath);
         return (new File(mFilepath));
     }
 
@@ -359,7 +366,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                 (bytes, camera) -> Log.i(TAG, "receive postview callback"),
                 (bytes, camera) -> {
                     Log.i(TAG, "receive jpeg callback");
-                    File pictureFile = getOutputMediaFile();
+                    File pictureFile = getOutputMediaFile(isJPEG);
                     if (pictureFile == null) {
                         return;
                     }
@@ -503,10 +510,13 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         Spinner spinner_ric_shooting_mode_video = findViewById(R.id.spinner_ric_shooting_mode_video);
         Spinner spinner_ric_proc_stitching      = findViewById(R.id.spinner_ric_proc_stitching);
         Spinner spinner_ric_proc_zenith_correction = findViewById(R.id.spinner_ric_proc_zenith_correction);
+        Spinner spinner_picture_format             = findViewById(R.id.spinner_picture_format);
         String ric_shooting_mode_image = spinner_ric_shooting_mode_image.getSelectedItem().toString();
         String ric_shooting_mode_video = spinner_ric_shooting_mode_video.getSelectedItem().toString();
         String ric_proc_stitching      = spinner_ric_proc_stitching.getSelectedItem().toString();
         String ric_proc_zenith_correction = spinner_ric_proc_zenith_correction.getSelectedItem().toString();
+        String   picture_format           = spinner_picture_format.getSelectedItem().toString();
+        String[] picture_format_array     = getResources().getStringArray(R.array.PICTURE_FORMAT);
 
         Camera.Parameters p = mCamera.getParameters();
         p.set(RIC_PROC_STITCHING,         ric_proc_stitching);
@@ -552,6 +562,14 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_image);
                 isMultiShot = !ric_shooting_mode_image.equals("RicStillCaptureStd");
                 p.setPictureSize(11008, 5504);   //11008*5504 or 5504*2752
+                if (picture_format.equals(picture_format_array[0])) { //JPEG or NV21
+                    p.setPictureFormat(ImageFormat.JPEG);
+                    isJPEG = true;
+                }
+                else {
+                    p.setPictureFormat(ImageFormat.NV21);
+                    isJPEG = false;
+                }
                 break;
             case VIDEO:
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_video);
@@ -584,6 +602,7 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
         findViewById(R.id.spinner_ric_shooting_mode_video).setEnabled(flag);
         findViewById(R.id.spinner_ric_proc_stitching).setEnabled(flag);
         findViewById(R.id.spinner_ric_proc_zenith_correction).setEnabled(flag);
+        findViewById(R.id.spinner_picture_format).setEnabled(isNV21Available? flag: false);
     }
 
     void enableButton(Button button, Boolean flag) {
