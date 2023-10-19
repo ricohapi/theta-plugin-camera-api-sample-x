@@ -1,6 +1,6 @@
 # THETA X Plug-in : Camera API Sample
 
-Version: 1.3.1
+Version: 1.4.0
 
 This sample project shows how to implement a plug-in using Camera API for RICOH THETA X.
 The program language is Kotlin, please checkout [java branch](https://github.com/ricohapi/theta-plugin-camera-api-sample-x/tree/java) to see Java code.
@@ -33,6 +33,7 @@ The program language is Kotlin, please checkout [java branch](https://github.com
     > * ⑥ Spinner to choose RIC_SHOOTING_MODE for video mode
     > * ⑦ Spinner to choose RIC_PROC_STITCHING
     > * ⑧ Spinner to choose RIC_PROC_ZENITH_CORRECTION
+    > * ⑩ Spinner to choose ImageFormat.JPEG or ImageFormat.NV21 for image mode
     > * Shutter Key : press to execute take picture ; same function as ②
     > * Mode Key : long press to exit plug-in
 
@@ -78,7 +79,7 @@ The program language is Kotlin, please checkout [java branch](https://github.com
         ```gradle
         dependencies {
             ...
-            implementation 'com.theta360:pluginlibrary:3.2.0'
+            implementation 'com.theta360:pluginlibrary:3.3.0'
             ...
         }
         ```
@@ -251,6 +252,14 @@ The program language is Kotlin, please checkout [java branch](https://github.com
     | RicPreview3840      | 3840 | 1920 |
     | RicPreview3840:2160 | 3840 | 2160 |
     | RicPreview5760      | 5760 | 2880 |
+
+### Capture Image as NV21 Format (available Version 2.30.0 or later)
+
+* Image Format can be set to ImageFormat.NV21 with following.
+
+    ```java
+    p.setPictureFormat(ImageFormat.NV21)
+    ```
 
 
 <a name="see_also"></a>
