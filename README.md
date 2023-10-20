@@ -22,21 +22,20 @@ The program language is Kotlin, please checkout [java branch](https://github.com
 * This sample project can capture image and video by using Camera API on RICOH THETA X.
 * Captured image and video will be stored in DCIM/100_TEST folder, and the files will be named as PC*.JPG or MV*.MP4. If micro SD card is inserted, the files are stored in micro SD card automatically.
 * Some Camera API Parameters can be set by UI.
-* User Interface
-    > * ![ui](ui.png)
-    > * ① Switch to start / stop camera preview
-    > * ② Button to execute take picture
-    > * ③ Button to execute start / stop video recording
-    > * ④ Texture View to show preview picture
-    > * ⑨ Spinner to choose RIC_SHOOTING_MODE for preview mode
-    > * ⑤ Spinner to choose RIC_SHOOTING_MODE for image mode
-    > * ⑥ Spinner to choose RIC_SHOOTING_MODE for video mode
-    > * ⑦ Spinner to choose RIC_PROC_STITCHING
-    > * ⑧ Spinner to choose RIC_PROC_ZENITH_CORRECTION
-    > * ⑩ Spinner to choose ImageFormat.JPEG or ImageFormat.NV21 for image mode
-    > * Shutter Key : press to execute take picture ; same function as ②
-    > * Mode Key : long press to exit plug-in
-
+* User Interface  
+     ![ui](ui.png)  
+    ① Switch to start / stop camera preview  
+    ② Button to execute take picture  
+    ③ Button to execute start / stop video recording  
+    ④ Texture View to show preview picture  
+    ⑨ Spinner to choose RIC_SHOOTING_MODE for preview mode  
+    ⑤ Spinner to choose RIC_SHOOTING_MODE for image mode  
+    ⑥ Spinner to choose RIC_SHOOTING_MODE for video mode  
+    ⑦ Spinner to choose RIC_PROC_STITCHING  
+    ⑧ Spinner to choose RIC_PROC_ZENITH_CORRECTION  
+    ⑩ Spinner to choose ImageFormat.JPEG or ImageFormat.NV21 for image mode  
+    Shutter Key : press to execute take picture ; same function as ②  
+    Mode Key : long press to exit plug-in  
 
 <a name="requirement"></a>
 ## Requirement
