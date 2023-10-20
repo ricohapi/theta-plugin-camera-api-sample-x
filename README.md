@@ -37,6 +37,7 @@ The program language is Kotlin, please checkout [java branch](https://github.com
     Shutter Key : press to execute take picture ; same function as ②  
     Mode Key : long press to exit plug-in  
 
+
 <a name="requirement"></a>
 ## Requirement
 
