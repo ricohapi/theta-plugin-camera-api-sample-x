@@ -5,12 +5,13 @@ import android.graphics.SurfaceTexture
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.PlanarYUVLuminanceSource
+import com.google.zxing.common.HybridBinarizer
+import com.google.zxing.qrcode.QRCodeReader
 import android.view.KeyEvent
 import android.view.TextureView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.Spinner
-import android.widget.Switch
+import android.widget.*
 import com.theta360.pluginlibrary.activity.PluginActivity
 import com.theta360.pluginlibrary.activity.ThetaInfo
 import com.theta360.pluginlibrary.callback.KeyCallback
@@ -66,6 +67,12 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
     private var mLcdBrightness: Int = 64
     private var mLedPowerBrightness:  IntArray = intArrayOf(0, 0, 0, 64)   //(dummy,R,G,B)
     private var mLedStatusBrightness: IntArray = intArrayOf(0, 0, 0, 64)   //(dummy,R,G,B)
+
+    //
+    // QR code
+    //
+    private var mBuffer: ByteArray? = null
+    private var mQRcodeString: String ?= null
 
     //location
     private val mLocationManager: LocationManagerUtil by lazy {
@@ -285,7 +292,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             return
         }
         //open camera with id setting CAMERA_FACING_DOUBLE directly
-        mCamera = Camera.open(this, Camera.CameraInfo.CAMERA_FACING_DOUBLE).apply {
+        mCamera = Camera.open(this, Camera.CameraInfo.CAMERA_FACING_FRONT).apply {
             isCameraOpen = true
             if (surface!=null) {
                 setPreviewTexture(surface)
@@ -321,10 +328,46 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             //return
         }
         mCamera!!.apply {
+            if(mBuffer == null) {
+                var size: Int = 512 * 512
+                size = size * ImageFormat.getBitsPerPixel(ImageFormat.NV21) / 8
+                mBuffer = ByteArray(size)
+
+                addCallbackBuffer(mBuffer)
+                setPreviewCallbackWithBuffer(mPreviewCallbackBuffer)
+            }
             setCameraParameters(MODE.PREVIEW)
             startPreview()
         }
         isPreview = true
+    }
+
+    //
+    // QR code reader
+    //
+    private val mReader = QRCodeReader()
+
+    val mPreviewCallbackBuffer = object: Camera.PreviewCallback {
+        override fun onPreviewFrame(p0: ByteArray?, p1: Camera?) {
+            if(p0 != null){
+                mCamera!!.addCallbackBuffer(mBuffer);
+            }
+
+            //
+            // QR code
+            //
+            val src = PlanarYUVLuminanceSource(p0, 512, 512, 0, 0, 512, 512, false)
+            val bmp = BinaryBitmap(HybridBinarizer(src))
+
+            try {
+                val result = mReader.decode(bmp)
+                mQRcodeString = result.text
+                Log.d(TAG,"QR code decode : " + mQRcodeString)
+                Toast.makeText(baseContext, mQRcodeString, Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                return
+            }
+        }
     }
 
     fun executeStopPreview() {
@@ -520,6 +563,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             MODE.PREVIEW -> {
                 val shooting_mode: String = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview).selectedItem.toString()
                 p.setPreviewFrameRate(if(isLowPowerPreview) 0 else 30)
+                /*
                 when (shooting_mode) {
                     "RicPreview1024" -> { p.setPreviewSize(1024, 512) }
                     "RicPreview1920" -> { p.setPreviewSize(1920, 960) }
@@ -533,6 +577,9 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                         p.setPreviewFrameRate(10)
                     }
                 }
+                */
+                p.setPreviewSize(512, 512)
+                p.previewFormat = ImageFormat.NV21
             }
             MODE.IMAGE -> {
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_image)

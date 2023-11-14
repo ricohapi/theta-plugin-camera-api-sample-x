@@ -39,4 +39,9 @@ dependencies {
     //testImplementation 'junit:junit:4.+'
     //androidTestImplementation 'com.android.support.test:runner:1.0.2'
     //androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    //
+    // QR code
+    //
+    implementation 'com.google.zxing:javase:3.3.3'
+    implementation 'com.google.zxing:android-core:3.3.0'
 }
