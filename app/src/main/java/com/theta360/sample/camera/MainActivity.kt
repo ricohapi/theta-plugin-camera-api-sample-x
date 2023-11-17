@@ -519,6 +519,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         when (mode) {
             MODE.PREVIEW -> {
                 val shooting_mode: String = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview).selectedItem.toString()
+                p.set(RIC_SHOOTING_MODE, shooting_mode)
                 p.setPreviewFrameRate(if(isLowPowerPreview) 0 else 30)
                 when (shooting_mode) {
                     "RicPreview1024" -> { p.setPreviewSize(1024, 512) }
