@@ -529,7 +529,8 @@ public class MainActivity extends PluginActivity implements MediaRecorder.OnInfo
             case PREVIEW:
                 Spinner spinner_ric_shooting_mode_preview = findViewById(R.id.spinner_ric_shooting_mode_preview);
                 String shooting_mode = spinner_ric_shooting_mode_preview.getSelectedItem().toString();
-                p.setPreviewFrameRate(30);
+                p.set(RIC_SHOOTING_MODE, shooting_mode);
+                p.setPreviewFrameRate(isLowPowerPreview? 0: 30);
                 switch (shooting_mode) {
                     case "RicPreview1024":
                         p.setPreviewSize(1024, 512);
