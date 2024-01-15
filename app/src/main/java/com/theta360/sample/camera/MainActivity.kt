@@ -165,6 +165,9 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         setSpinner(spinner_ric_shooting_mode_preview, getResources().getStringArray(
             if (version >= 1200) R.array.RIC_SHOOTING_MODE_PREVIEW_ARRAY
             else                 R.array.RIC_SHOOTING_MODE_PREVIEW_OLD_ARRAY))
+        setSpinner(spinner_ric_shooting_mode_image, getResources().getStringArray(
+            if (version >= 2400) R.array.RIC_SHOOTING_MODE_IMAGE_ARRAY
+            else                 R.array.RIC_SHOOTING_MODE_IMAGE_OLD_ARRAY))
         spinner_ric_shooting_mode_preview.setSelection(0)       //RicPreview1024
         spinner_ric_shooting_mode_image.setSelection(0)         //RicStillCaptureStd
         spinner_ric_shooting_mode_video.setSelection(1)         //RicMovieRecording3840
@@ -220,7 +223,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
 
     private fun setSpinner(spinner: Spinner, arr: Array<String>){
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arr)
-        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.setAdapter(adapter)
     }
 
