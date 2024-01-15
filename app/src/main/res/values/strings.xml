@@ -17,10 +17,16 @@
         <item>RicPreview5760</item>
         <item>RicPreview7680</item>
     </string-array>
+    <string-array name="RIC_SHOOTING_MODE_IMAGE_OLD_ARRAY">
+        <item>RicStillCaptureStd</item>
+        <item>RicStillCaptureMultiRawNR</item>
+        <item>RicStillCaptureMultiYuvHdr</item>
+    </string-array>
     <string-array name="RIC_SHOOTING_MODE_IMAGE_ARRAY">
         <item>RicStillCaptureStd</item>
         <item>RicStillCaptureMultiRawNR</item>
         <item>RicStillCaptureMultiYuvHdr</item>
+        <item>RicStillCaptureMultiYuvHhHdr</item>
     </string-array>
     <string-array name="RIC_SHOOTING_MODE_VIDEO_ARRAY">
         <item>RicMovieRecording1920</item>
