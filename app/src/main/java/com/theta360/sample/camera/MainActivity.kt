@@ -2,6 +2,10 @@ package com.theta360.sample.camera
 
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -71,6 +75,24 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
     private val mLocationManager: LocationManagerUtil by lazy {
         val manager = LocationManagerUtil(this)
         manager
+    }
+
+    //sensor
+    private var mSensorManager: SensorManager? = null
+    private var mSensorMag: Sensor? = null
+    private val mSensorEventListener = object : SensorEventListener {
+        override fun onSensorChanged(p0: SensorEvent?) {
+            //TODO
+        }
+        override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+            if (p0?.type == Sensor.TYPE_MAGNETIC_FIELD) {
+                Log.d(TAG, "MAGNETIC sensor accuracy is changed to " +
+                        if (p1 == 3) "HIGH"   else
+                        if (p1 == 2) "MEDIUM" else
+                        if (p1 == 1) "LOW"    else
+                        if (p1 == 0) "UNRELIABLE" else "NO_CONTACT")
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -192,6 +214,10 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                 switch_camera.isChecked = true  //start preview
             }
         }
+
+        //sensor
+        mSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        mSensorMag = mSensorManager!!.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
     }
 
     override fun onPause() {
@@ -199,6 +225,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         setAutoClose(false)     //the flag which does not finish plug-in in onPause
         closeCamera()
         mLocationManager.stop()
+        mSensorManager!!.unregisterListener(mSensorEventListener)
         super.onPause()
     }
 
@@ -212,6 +239,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             findViewById<Switch>(R.id.switch_camera).isChecked = true   //start camera
         }
         mLocationManager.start()
+        mSensorManager!!.registerListener(mSensorEventListener, mSensorMag, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     override fun onInfo(mr: MediaRecorder, what: Int, extra: Int) {
