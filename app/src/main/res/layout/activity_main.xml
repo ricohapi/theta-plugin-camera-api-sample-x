@@ -132,4 +132,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner_ric_proc_zenith_correction" />
 
+    <RelativeLayout
+        android:id="@+id/compass_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone">
+        <include layout="@layout/layout_compass" />
+    </RelativeLayout>
+
 </android.support.constraint.ConstraintLayout>

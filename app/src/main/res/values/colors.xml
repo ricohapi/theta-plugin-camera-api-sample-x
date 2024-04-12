@@ -2,4 +2,5 @@
 <resources>
     <color name="button_color_enabled">#7FD3ED</color>
     <color name="button_color_disabled">#E0E0E0</color>
+    <color name="colorWhite">#FFFFFF</color>
 </resources>

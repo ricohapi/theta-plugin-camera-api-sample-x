@@ -11,10 +11,8 @@ import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
 import android.view.TextureView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.Spinner
-import android.widget.Switch
+import android.view.View
+import android.widget.*
 import com.theta360.pluginlibrary.activity.PluginActivity
 import com.theta360.pluginlibrary.activity.ThetaInfo
 import com.theta360.pluginlibrary.callback.KeyCallback
@@ -91,6 +89,14 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                         if (p1 == 2) "MEDIUM" else
                         if (p1 == 1) "LOW"    else
                         if (p1 == 0) "UNRELIABLE" else "NO_CONTACT")
+                if (p1 <= 1) {
+                    val relative_compass_layout: RelativeLayout = findViewById<RelativeLayout>(R.id.compass_layout)
+                    relative_compass_layout.visibility = View.VISIBLE
+                }
+                if (p1 >= 2) {
+                    val relative_compass_layout: RelativeLayout = findViewById<RelativeLayout>(R.id.compass_layout)
+                    relative_compass_layout.visibility = View.GONE
+                }
             }
         }
     }

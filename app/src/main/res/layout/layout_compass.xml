@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="340dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/toast_bg">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="17dp"
+            android:layout_marginTop="14dp"
+            android:src="@drawable/ic_compass_error" />
+
+        <TextView
+            android:id="@+id/tv_compass"
+            android:layout_width="wrap_content"
+            android:layout_height="79dp"
+            android:layout_marginStart="69dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="21dp"
+            android:lineSpacingExtra="4.5sp"
+            android:text="Orientation is not\nrecognized properly"
+            android:textColor="@color/colorWhite"
+            android:textSize="20sp"
+            android:textStyle="normal" />
+
+        <ImageView
+            android:id="@+id/img"
+            android:layout_width="220dp"
+            android:layout_height="120dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="99dp"
+            android:src="@drawable/gps_correction_image" />
+
+        <TextView
+            android:id="@+id/tv_move"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/img"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="10dp"
+            android:gravity="center_horizontal"
+            android:lineSpacingExtra="6sp"
+            android:text="Move the camera\nas if drawing ∞"
+            android:textColor="@color/colorWhite"
+            android:textSize="24sp"
+            android:textStyle="normal" />
+
+    </RelativeLayout>
+</RelativeLayout>
