@@ -73,6 +73,9 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         manager
     }
 
+    //
+    private var isDouble = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.i(TAG,"onCreate")
         super.onCreate(savedInstanceState)
@@ -95,7 +98,9 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             override fun onKeyDown(p0: Int, p1: KeyEvent?) {
                 if (p0 == KeyReceiver.KEYCODE_CAMERA ||
                     p0 == KeyReceiver.KEYCODE_VOLUME_UP) {  //Bluetooth remote shutter
-                    button_image.callOnClick()      //executeTakePicture()
+                    if (isDouble) {
+                        button_image.callOnClick()      //executeTakePicture()
+                    }
                 }
             }
             override fun onKeyUp(p0: Int, p1: KeyEvent?) {
@@ -114,6 +119,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         //Switch : start or stop camera preview
         switch_camera.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
+                openCamera(null)
                 enableAllSpinners(false)
                 enableAllButtons(true)
                 executeStartPreview()
@@ -122,6 +128,8 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                 enableAllSpinners(true)
                 enableAllButtons(false)
                 executeStopPreview()
+                closeCamera()
+                isDouble = !isDouble
             }
         }
 
@@ -143,7 +151,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                 enableAllButtons(false)
                 startVideoRecording()
                 mHandler.postDelayed({
-                    enableButton(button_video,true)
+                    enableButton(button_video, isDouble)
                     button_video.setText(R.string.stop_video)
                 }, 1_000)   //TODO
             }
@@ -288,7 +296,9 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             return
         }
         //open camera with id setting CAMERA_FACING_DOUBLE directly
-        mCamera = Camera.open(this, Camera.CameraInfo.CAMERA_FACING_DOUBLE).apply {
+        mCamera = Camera.open(this,
+            if(isDouble) Camera.CameraInfo.CAMERA_FACING_DOUBLE
+            else         Camera.CameraInfo.CAMERA_FACING_FRONT).apply {
             isCameraOpen = true
             if (surface!=null) {
                 setPreviewTexture(surface)
@@ -521,21 +531,30 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
 
         when (mode) {
             MODE.PREVIEW -> {
-                val shooting_mode: String = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview).selectedItem.toString()
-                p.set(RIC_SHOOTING_MODE, shooting_mode)
-                p.setPreviewFrameRate(if(isLowPowerPreview) 0 else 30)
-                when (shooting_mode) {
-                    "RicPreview1024" -> { p.setPreviewSize(1024, 512) }
-                    "RicPreview1920" -> { p.setPreviewSize(1920, 960) }
-                    "RicPreview3840" -> { p.setPreviewSize(3840, 1920) }
-                    "RicPreview5760" -> { p.setPreviewSize(5760, 2880) }
-                    "RicPreview1024:576" -> { p.setPreviewSize(1024, 576) }
-                    "RicPreview1920:1080" -> { p.setPreviewSize(1920, 1080) }
-                    "RicPreview3840:2160" -> { p.setPreviewSize(3840, 2160) }
-                    "RicPreview7680" -> {
-                        p.setPreviewSize(7680, 3840)
-                        p.setPreviewFrameRate(10)
+                //DOUBLE
+                if (isDouble) {
+                    val shooting_mode: String =
+                        findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview).selectedItem.toString()
+                    p.set(RIC_SHOOTING_MODE, shooting_mode)
+                    p.setPreviewFrameRate(if (isLowPowerPreview) 0 else 30)
+                    when (shooting_mode) {
+                        "RicPreview1024" -> { p.setPreviewSize(1024, 512) }
+                        "RicPreview1920" -> { p.setPreviewSize(1920, 960) }
+                        "RicPreview3840" -> { p.setPreviewSize(3840, 1920) }
+                        "RicPreview5760" -> { p.setPreviewSize(5760, 2880) }
+                        "RicPreview1024:576" -> { p.setPreviewSize(1024, 576) }
+                        "RicPreview1920:1080" -> { p.setPreviewSize(1920, 1080) }
+                        "RicPreview3840:2160" -> { p.setPreviewSize(3840, 2160) }
+                        "RicPreview7680" -> {
+                            p.setPreviewSize(7680, 3840)
+                            p.setPreviewFrameRate(10)
+                        }
                     }
+                }
+                //SINGLE
+                else {
+                    p.setPreviewFrameRate(if (isLowPowerPreview) 0 else 30)
+                    p.setPreviewSize(2752, 2752)
                 }
             }
             MODE.IMAGE -> {
