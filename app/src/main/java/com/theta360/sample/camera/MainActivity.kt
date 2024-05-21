@@ -553,6 +553,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                 }
                 //SINGLE
                 else {
+                    p.set(RIC_SHOOTING_MODE, "RicPreviewFront")
                     p.setPreviewFrameRate(if (isLowPowerPreview) 0 else 30)
                     p.setPreviewSize(2752, 2752)
                 }
