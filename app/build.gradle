@@ -4,7 +4,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion 29
+    namespace "com.theta360.sample.camera"
+    compileSdkVersion 34
 
     defaultConfig {
         applicationId "com.theta360.sample.camera"
@@ -27,16 +28,14 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
     }
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
-    implementation 'com.theta360:pluginlibrary:3.3.0'
-    //testImplementation 'junit:junit:4.+'
-    //androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    //androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.theta360:pluginlibrary:4.0.0'
 }

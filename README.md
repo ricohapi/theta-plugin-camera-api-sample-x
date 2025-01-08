@@ -1,9 +1,9 @@
 # THETA X Plug-in : Camera API Sample
 
-Version: 1.5.0
+Version: 1.5.1
 
 This sample project shows how to implement a plug-in using Camera API for RICOH THETA X.
-The program language is Kotlin, please checkout [java branch](https://github.com/ricohapi/theta-plugin-camera-api-sample-x/tree/java) to see Java code.
+The program language is Kotlin, please checkout [java branch](https://github.com/ricohapi/theta-plugin-camera-api-sample-x/tree/java) to see Java code, but java branch is not maintained after version 1.5.0.
 
 ## Contents
 
@@ -43,21 +43,21 @@ The program language is Kotlin, please checkout [java branch](https://github.com
 
 ### Supported Device
 
-* RICOH THETA X (Version 1.00.2, 1.10.1, 1.20.0, 1.30.0, 1.40.0, 1.41.0, 2.00.0, 2.10.1, 2.20.1, 2.21.0, 2.30.0, 2.40.0)
+* RICOH THETA X (Version 1.00.2, 1.10.1, 1.20.0, 1.30.0, 1.40.0, 1.41.0, 2.00.0, 2.10.1, 2.20.1, 2.21.0, 2.30.0, 2.40.0, 2.50.2, 2.51.0, 2.61.0, 2.63.0)
 * RICOH THETA V and Z1 are NOT supported.
 
 ### Development Environment
 
-* Android Studio Chipmunk | 2021.2.1 Patch 2
-    * Windows 10 Version 21H2
-    * macOS Version 13.2.1 Ventura
-* Gradle Plugin Version 4.2.2
-* Gradle Version 6.7.1
+* Android Studio Ladybug | 2024.2.1 Patch 3
+    * Windows 10 Version 22H2
+    * macOS Version 15.0 Sequoia
+* Gradle Plugin Version 8.7.3
+* Gradle Version 8.9
 * Android&trade; SDK (API Level 29)
-* compileSdkVersion 29
+* compileSdkVersion 34
 * minSdkVersion 26
 * targetSdkVersion 29
-* [RICOH THETA Plug-in Library](https://github.com/ricohapi/theta-plugin-library) (Version 3.2.0) is being imported.
+* [RICOH THETA Plug-in Library](https://github.com/ricohapi/theta-plugin-library) (Version 4.0.0) is being imported.
 
 
 <a name="how_to_use"></a>

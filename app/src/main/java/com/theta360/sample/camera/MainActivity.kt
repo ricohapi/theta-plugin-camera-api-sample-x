@@ -178,16 +178,16 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         //TextureView : show preview
         val texture_view = findViewById<TextureView>(R.id.texture_view)
         texture_view.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-            override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
+            override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
                 //do nothing
             }
-            override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {
+            override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
                 //do nothing
             }
-            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
+            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
                 return false
             }
-            override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
+            override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
                 openCamera(surface)             //open camera
                 switch_camera.isChecked = true  //start preview
             }
@@ -366,9 +366,9 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                         fos.write(data)
                         fos.close()
                     } catch (e: FileNotFoundException) {
-                        Log.e(TAG, e.message)
+                        Log.e(TAG, e.message!!)
                     } catch (e: IOException) {
-                        Log.e(TAG, e.message)
+                        Log.e(TAG, e.message!!)
                     }
                     notificationDatabaseUpdate(mFilepath)
 
