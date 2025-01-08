@@ -4,7 +4,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion 29
+    namespace "com.theta360.sample.camera"
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.theta360.sample.camera"

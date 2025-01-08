@@ -27,13 +27,13 @@ class LocationManagerUtil(context:Context) {
 
     private val locationManager: LocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private val locationListener: LocationListener = object : LocationListener {
-        override fun onLocationChanged(location: Location?) {
+        override fun onLocationChanged(location: Location) {
         }
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
         }
-        override fun onProviderEnabled(provider: String?) {
+        override fun onProviderEnabled(provider: String) {
         }
-        override fun onProviderDisabled(provider: String?) {
+        override fun onProviderDisabled(provider: String) {
         }
     }
 
