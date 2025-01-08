@@ -54,10 +54,10 @@ The program language is Kotlin, please checkout [java branch](https://github.com
 * Gradle Plugin Version 8.7.3
 * Gradle Version 8.9
 * Android&trade; SDK (API Level 29)
-* compileSdkVersion 30
+* compileSdkVersion 34
 * minSdkVersion 26
 * targetSdkVersion 29
-* [RICOH THETA Plug-in Library](https://github.com/ricohapi/theta-plugin-library) (Version 3.2.0) is being imported.
+* [RICOH THETA Plug-in Library](https://github.com/ricohapi/theta-plugin-library) (Version 4.0.0) is being imported.
 
 
 <a name="how_to_use"></a>
