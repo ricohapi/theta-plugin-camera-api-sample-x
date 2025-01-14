@@ -7,6 +7,7 @@ import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
 import android.view.TextureView
+import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
@@ -78,6 +79,9 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //do not enter to sleep-mode
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         setFolderPath()
 
         val switch_camera: Switch = findViewById<Switch>(R.id.switch_camera)
@@ -95,7 +99,8 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             override fun onKeyDown(p0: Int, p1: KeyEvent?) {
                 if (p0 == KeyReceiver.KEYCODE_CAMERA ||
                     p0 == KeyReceiver.KEYCODE_VOLUME_UP) {  //Bluetooth remote shutter
-                    button_image.callOnClick()      //executeTakePicture()
+                    //button_image.callOnClick()      //executeTakePicture()
+                    button_video.callOnClick()        //executeStart/StopVideoRecording()
                 }
             }
             override fun onKeyUp(p0: Int, p1: KeyEvent?) {
@@ -215,9 +220,13 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
     }
 
     override fun onInfo(mr: MediaRecorder, what: Int, extra: Int) {
-        //Log.d(TAG, "onInfo() : what=" + what + ", extra=" + extra)
+        Log.d(TAG, "onInfo() : what=" + what + ", extra=" + extra)
         if (what == MediaRecorder.MEDIA_RECORDER_EVENT_RECORD_STOP) {
             notificationAudioMovStop()
+        }
+        if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
+            Log.d(TAG, "onInfo:MEDIA_RECORDER_INFO_MAX_DURATION_REACHED")
+            //stopVideoRecording()
         }
     }
 
@@ -461,6 +470,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                     setVideoEncodingIFrameInterval(0.0f)                            //set I-frame only GOP
                 }
             }
+            setMaxDuration(0)  //do not callback MEDIA_RECORDER_INFO_MAX_DURATION_REACHED
 
             //filename
             setFolderPath()
@@ -553,7 +563,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             }
             MODE.VIDEO -> {
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_video)
-                p.set(Camera.Parameters.VIDEO_PREVIEW_SWITCH, 0)
+                p.set(Camera.Parameters.VIDEO_PREVIEW_SWITCH, 1) //save power consumption by disabling preview during video recording
             }
         }
 
