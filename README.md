@@ -194,7 +194,7 @@ The program language is Kotlin, please checkout [java branch](https://github.com
     ```java
     /**
      * @brief set gain to microphone
-     * @param int micGain : 1=normal(default), 2=low
+     * @param int micGain : 1=normal(default), 2=low, 3=mute(not record audio track)
      */
     public void setMicGain(int micGain)
 
