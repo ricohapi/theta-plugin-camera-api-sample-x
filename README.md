@@ -43,14 +43,14 @@ The program language is Kotlin, please checkout [java branch](https://github.com
 
 ### Supported Device
 
-* RICOH THETA X (Version 1.00.2, 1.10.1, 1.20.0, 1.30.0, 1.40.0, 1.41.0, 2.00.0, 2.10.1, 2.20.1, 2.21.0, 2.30.0, 2.40.0, 2.50.2, 2.51.0, 2.61.0, 2.63.0)
+* RICOH THETA X (Version 1.00.2, 1.10.1, 1.20.0, 1.30.0, 1.40.0, 1.41.0, 2.00.0, 2.10.1, 2.20.1, 2.21.0, 2.30.0, 2.40.0, 2.50.2, 2.51.0, 2.61.0, 2.63.0, 2.71.1)
 * RICOH THETA V and Z1 are NOT supported.
 
 ### Development Environment
 
-* Android Studio Ladybug | 2024.2.1 Patch 3
-    * Windows 10 Version 22H2
-    * macOS Version 15.0 Sequoia
+* Android Studio Meerkat | 2024.3.1
+    * Windows 11 Version 23H2
+    * macOS Version 14 Sonoma
 * Gradle Plugin Version 8.7.3
 * Gradle Version 8.9
 * Android&trade; SDK (API Level 29)

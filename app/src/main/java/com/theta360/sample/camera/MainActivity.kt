@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.Switch
+import android.widget.Toast
 import com.theta360.pluginlibrary.activity.PluginActivity
 import com.theta360.pluginlibrary.activity.ThetaInfo
 import com.theta360.pluginlibrary.callback.KeyCallback
@@ -141,11 +142,18 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             if (!isRecording) {
                 switch_camera.isClickable = false
                 enableAllButtons(false)
-                startVideoRecording()
-                mHandler.postDelayed({
-                    enableButton(button_video,true)
-                    button_video.setText(R.string.stop_video)
-                }, 1_000)   //TODO
+                if (startVideoRecording()) {
+                    mHandler.postDelayed({
+                        enableButton(button_video, true)
+                        button_video.setText(R.string.stop_video)
+                    }, 1_000)   //TODO
+                }
+                else {
+                    //Back to ready because startVideoRecording is failed by some reason.
+                    switch_camera.isClickable = true
+                    enableAllButtons(true)
+                    button_video.setText(R.string.start_video)
+                }
             }
             else {
                 switch_camera.isClickable = true
@@ -244,6 +252,15 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                 }
             }
         }
+
+        //if SD card is NOT inserted
+        if (mPath.equals(PATH_INTERNAL)) {
+            Log.d(TAG, "Error: SD Card Is Not Inserted")
+            notificationAudioWarning()
+            Toast.makeText(this, "SD Card Is Not Inserted", Toast.LENGTH_LONG).show()
+            return false
+        }
+
         //directory check : DCIM
         try{
             val file = File(mPath + DCIM)
@@ -357,23 +374,21 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                 },
                 Camera.PictureCallback{ data, _ ->
                     Log.i(TAG,"receive jpeg callback")
-                    val pictureFile: File = getOutputMediaFile(isJPEG) ?: run {
+                    getOutputMediaFile(isJPEG)?.let { pictureFile ->
+                        try {
+                            val fos = FileOutputStream(pictureFile)
+                            fos.write(data)
+                            fos.close()
+                        } catch (e: FileNotFoundException) {
+                            Log.e(TAG, e.message!!)
+                        } catch (e: IOException) {
+                            Log.e(TAG, e.message!!)
+                        }
+                        notificationDatabaseUpdate(mFilepath)
+                    } ?: run {
                         Log.e(TAG, "cannot create file")
-                        return@PictureCallback
                     }
-                    try {
-                        val fos = FileOutputStream(pictureFile)
-                        fos.write(data)
-                        fos.close()
-                    } catch (e: FileNotFoundException) {
-                        Log.e(TAG, e.message!!)
-                    } catch (e: IOException) {
-                        Log.e(TAG, e.message!!)
-                    }
-                    notificationDatabaseUpdate(mFilepath)
-
                     isCapturing = false
-
                     executeStartPreview()
 
                     //TODO
@@ -411,7 +426,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         }
     }
 
-    fun startVideoRecording() {
+    fun startVideoRecording(): Boolean {
         Log.i(TAG,"startVideoRecording")
 
         mCamera!!.apply {
@@ -463,7 +478,10 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             }
 
             //filename
-            setFolderPath()
+            if(!setFolderPath()) {
+                releaseMediaRecorder()
+                return false
+            }
             mFilepath = mPath + "VD" + SimpleDateFormat("HHmmss").format(Date()) + ".MP4"
             Log.i(TAG, "MP4 file path = " + mFilepath)
             setOutputFile(mFilepath)
@@ -482,6 +500,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             isRecording = true
             start()
         }
+        return true
     }
 
     fun stopVideoRecording() {
