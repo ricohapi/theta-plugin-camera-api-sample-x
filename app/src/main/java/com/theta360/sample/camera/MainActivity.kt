@@ -7,6 +7,7 @@ import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
 import android.view.TextureView
+import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
@@ -77,6 +78,9 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
         Log.i(TAG,"onCreate")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        //do not enter to sleep-mode
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         setFolderPath()
 
