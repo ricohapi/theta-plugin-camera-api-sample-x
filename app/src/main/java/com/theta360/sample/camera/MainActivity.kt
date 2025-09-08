@@ -99,7 +99,8 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
             override fun onKeyDown(p0: Int, p1: KeyEvent?) {
                 if (p0 == KeyReceiver.KEYCODE_CAMERA ||
                     p0 == KeyReceiver.KEYCODE_VOLUME_UP) {  //Bluetooth remote shutter
-                    button_image.callOnClick()      //executeTakePicture()
+                    //button_image.callOnClick()      //executeTakePicture()
+                    button_video.callOnClick()      //executeStart/StopVideoRecording()
                 }
             }
             override fun onKeyUp(p0: Int, p1: KeyEvent?) {
@@ -468,7 +469,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
 
             //filename
             setFolderPath()
-            mFilepath = mPath + "VD" + SimpleDateFormat("HHmmss").format(Date()) + ".MP4"
+            mFilepath = mPath + "VD" + SimpleDateFormat("HHmmss").format(Date()) + "_0.MP4" //single fisheye video
             Log.i(TAG, "MP4 file path = " + mFilepath)
             setOutputFile(mFilepath)
 
@@ -525,9 +526,12 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
 
         when (mode) {
             MODE.PREVIEW -> {
-                val shooting_mode: String = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview).selectedItem.toString()
-                p.set(RIC_SHOOTING_MODE, shooting_mode)
+                //val shooting_mode: String = findViewById<Spinner>(R.id.spinner_ric_shooting_mode_preview).selectedItem.toString()
+                //p.set(RIC_SHOOTING_MODE, shooting_mode)
+                p.set(RIC_SHOOTING_MODE, "RicPreview512:512") //single fisheye video
+                p.setPreviewSize(512, 512)
                 p.setPreviewFrameRate(if(isLowPowerPreview) 0 else 30)
+                /*
                 when (shooting_mode) {
                     "RicPreview1024" -> { p.setPreviewSize(1024, 512) }
                     "RicPreview1920" -> { p.setPreviewSize(1920, 960) }
@@ -541,6 +545,7 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                         p.setPreviewFrameRate(10)
                     }
                 }
+                */
             }
             MODE.IMAGE -> {
                 p.set(RIC_SHOOTING_MODE, ric_shooting_mode_image)
@@ -556,8 +561,15 @@ class MainActivity : PluginActivity(), MediaRecorder.OnInfoListener {
                 }
             }
             MODE.VIDEO -> {
-                p.set(RIC_SHOOTING_MODE, ric_shooting_mode_video)
+                //p.set(RIC_SHOOTING_MODE, ric_shooting_mode_video)
                 p.set(Camera.Parameters.VIDEO_PREVIEW_SWITCH, 0)
+
+                //single fisheye video
+                p.set(RIC_SHOOTING_MODE, "RicMovieRecording2752:2752")
+                //filename for rear lens
+                setFolderPath()
+                var filepathRear = mPath + "VD" + SimpleDateFormat("HHmmss").format(Date()) + "_1.MP4" //single
+                p.set("rear_fisheye_video_file", filepathRear)
             }
         }
 
